@@ -1,2 +1,3 @@
 ﻿  rayCasting.cpp
-  Synth.vcxproj -> C:\Users\TUSHAR\source\repos\Synth2\bin\Win32\Debug\Synth.exe
+c:\users\tushar\source\repos\synth3\synth\raycasting.cpp(227): warning C4018: '<': signed/unsigned mismatch
+  Synth.vcxproj -> C:\Users\TUSHAR\source\repos\Synth3\bin\Win32\Debug\Synth.exe

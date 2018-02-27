@@ -1,7 +1,8 @@
 ﻿  rayCasting.cpp
+rayCasting.cpp(239): warning C4018: '<': signed/unsigned mismatch
   Generating code
-  10 of 194 functions ( 5.2%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    1 functions had inline decision re-evaluated but remain unchanged
+  7 of 206 functions ( 3.4%) were compiled, the rest were copied from previous compilation.
+    5 functions were new in current compilation
+    4 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
-  Synth.vcxproj -> C:\Users\TUSHAR\source\repos\Synth2\bin\Win32\Release\Synth.exe
+  Synth.vcxproj -> C:\Users\TUSHAR\source\repos\Synth3\bin\Win32\Release\Synth.exe
