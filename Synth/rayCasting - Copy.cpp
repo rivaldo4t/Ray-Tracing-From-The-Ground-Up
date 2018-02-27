@@ -24,14 +24,14 @@ const int Xmax = 600, Ymax = 600;
 double farPlane = 100;
 float frameBuffer[Ymax][Xmax][3] = { 0 };
 
-cyPoint3d _DC304B(220.0 / 255.0, 48.0 / 255.0, 75.0 / 255.0);
-cyPoint3d _F95F62(249.0 / 255.0, 95.0 / 255.0, 98.0 / 255.0);
+cyPoint3d _DC304B(220.0 / 255.0,  48.0 / 255.0,  75.0 / 255.0);
+cyPoint3d _F95F62(249.0 / 255.0,  95.0 / 255.0,  98.0 / 255.0);
 cyPoint3d _FFFFFF(255.0 / 255.0, 255.0 / 255.0, 255.0 / 255.0);
-cyPoint3d _1F2D3D(31.0 / 255.0, 45.0 / 255.0, 61.0 / 255.0);
-cyPoint3d _343F4B(52.0 / 255.0, 63.0 / 255.0, 75.0 / 255.0);
+cyPoint3d _1F2D3D( 31.0 / 255.0,  45.0 / 255.0,  61.0 / 255.0);
+cyPoint3d _343F4B( 52.0 / 255.0,  63.0 / 255.0,  75.0 / 255.0);
 cyPoint3d _FFEFCA(255.0 / 255.0, 239.0 / 255.0, 202.0 / 255.0);
 cyPoint3d _EDA16A(237.0 / 255.0, 161.0 / 255.0, 106.0 / 255.0);
-cyPoint3d _C83741(200.0 / 255.0, 55.0 / 255.0, 65.0 / 255.0);
+cyPoint3d _C83741(200.0 / 255.0,  55.0 / 255.0,  65.0 / 255.0);
 cyPoint3d _CA4679(202.0 / 255.0, 70.0 / 255.0, 121.0 / 255.0);
 cyPoint3d _725E9C(14.0 / 255.0, 94.0 / 255.0, 156.0 / 255.0);
 cyPoint3d _823066(130.0 / 255.0, 48.0 / 255.0, 102.0 / 255.0);
@@ -101,17 +101,17 @@ public:
 	Quadric();
 
 	Quadric(cyPoint3d _ai2,
-		double _a21,
-		double _a00,
-		cyPoint3d _qc,
-		cyPoint3d _si,
-		vector<cyPoint3d> _N,
-		vector<pair<double, cyPoint3d>> _colors) :
-		ai2(_ai2), a21(_a21), a00(_a00), qc(_qc), si(_si), N(_N),
-		ambientFact(_colors[0].first), ambientColor(_colors[0].second),
-		diffuseFact(_colors[1].first), diffuseColor(_colors[1].second),
-		specularFact(_colors[2].first), specularColor(_colors[2].second),
-		borderFact(_colors[3].first), borderColor(_colors[3].second) {}
+			double _a21, 
+			double _a00, 
+			cyPoint3d _qc, 
+			cyPoint3d _si,
+			vector<cyPoint3d> _N,
+			vector<pair<double, cyPoint3d>> _colors) :
+			ai2(_ai2), a21(_a21), a00(_a00), qc(_qc), si(_si), N(_N),
+			ambientFact(_colors[0].first), ambientColor(_colors[0].second),
+			diffuseFact(_colors[1].first), diffuseColor(_colors[1].second),
+			specularFact(_colors[2].first), specularColor(_colors[2].second),
+			borderFact(_colors[3].first), borderColor(_colors[3].second) {}
 
 	inline pair<bool, double> intersect(cyPoint3d eye, cyPoint3d eyeToPix)
 	{
@@ -131,7 +131,7 @@ public:
 		}
 
 		D = (B * B) - (4 * A * C);
-
+		
 		if (D < 0)
 			return { false, INT_MAX };
 
@@ -180,13 +180,10 @@ public:
 
 		if (A == 0)
 		{
-			temp1 = (-C / B);
-			if (temp1 < 0)
+			if ((-C / B) < 0)
 				return 0;
-			else if (temp1 < lightdist)
-				return temp1;
 			else
-				return 0;
+				return (-C / B);
 		}
 
 		temp1 = (-B + sqrt(D)) / (2 * A);
@@ -234,7 +231,7 @@ public:
 	cyPoint3d color;
 	cyPoint3d dir;
 
-	Light(cyPoint3d _pos, cyPoint3d _color, cyPoint3d _dir = { 0,0,0 }) : pos(_pos), color(_color), dir(_dir) {}
+	Light(cyPoint3d _pos, cyPoint3d _color, cyPoint3d _dir = {0,0,0}) : pos(_pos), color(_color), dir(_dir) {}
 };
 
 inline cyPoint3d computeAmbientColor(Quadric& q)
@@ -281,7 +278,7 @@ inline cyPoint3d computeBorderColor(cyPoint3d& normalAtHit, cyPoint3d& eyeToHitP
 
 inline bool shadowRay(int& objIndex, cyPoint3d& hitPoint, cyPoint3d& hitPointToLight, double& pointToLightDist, vector<Quadric>& quadrics)
 {
-	for (unsigned int i = 0; i < quadrics.size(); i++)
+	for (int i = 0; i < quadrics.size(); i++)
 	{
 		if (i == objIndex)
 			continue;
@@ -310,11 +307,11 @@ void renderScene()
 	cyPoint3d n0 = view.Cross(up).GetNormalized();
 	cyPoint3d n1 = n0.Cross(n2).GetNormalized();
 
-	double focalLength = 8;
-	cyPoint3d viewPortCenter = eye + n2 * focalLength;
-	double scaleX = 10;
-	double scaleY = 10;
-	cyPoint3d vpBottomLeft = viewPortCenter - n0 * (scaleX / 2.0) - n1 * (scaleY / 2.0);
+	double focalLength			= 8;
+	cyPoint3d viewPortCenter	= eye + n2 * focalLength;
+	double scaleX				= 10;
+	double scaleY				= 10;
+	cyPoint3d vpBottomLeft		= viewPortCenter - n0 * (scaleX / 2.0) - n1 * (scaleY / 2.0);
 
 #ifdef AREALIGHT
 	cyPoint3d pl(0, 10, -6);
@@ -335,34 +332,36 @@ void renderScene()
 
 	cyPoint3d color, pix, eyeToPix, hitPoint, normalAtHit;
 	double X, Y, x, y, rx, ry, hitParam, hitParamTemp;
-	double weighted = 1.0 / (subPixX * subPixY);
+	double weighted				= 1.0 / (subPixX * subPixY);
 
 	vector<Quadric> quadrics;
-	cyPoint3d _qc(0, 0, -10);
-	cyPoint3d _ai2(1, 1, 1);
-	cyPoint3d _si(2, 2, 2);
+	cyPoint3d _qc (0, 0, -10);
+	cyPoint3d _ai2(1, 1, 1 );
+	cyPoint3d _si (2, 2, 2);
 	double _a21 = 0, _a00 = -1;
-	vector<cyPoint3d> N = { { 0, 1, 0 },{ 1, 0, 0 },{ 0, 0, -1 } };
-	vector<pair<double, cyPoint3d>> colors = { { 0.05,{ 1, 1, 1 } },{ 50, _DC304B },{ 1, _DC304B },{ 0.3 ,{ 1, 1, 1 } } };
+	vector<cyPoint3d> N = { { 0, 1, 0 }, { 1, 0, 0 }, { 0, 0, -1 } };
+	vector<pair<double, cyPoint3d>> colors = { { 0.05, { 1, 1, 1 } }, { 50, _DC304B }, { 1, _DC304B }, { 0.3 ,{ 1, 1, 1 } } };
 	quadrics.push_back(Quadric(_ai2, _a21, _a00, { 0, 2, -6 }, { 2, 2, 2 }, N, colors));
 
 	N[2] = { 0, 1, 0 };
-	vector<pair<double, cyPoint3d>> colors2 = { { 0.05,{ 1, 1, 1 } },{ 50, _72828F },{ 0.0, _72828F },{ 0.0,{ 1,1,1 } } };
+	vector<pair<double, cyPoint3d>> colors2 = { { 0.05, { 1, 1, 1 } }, { 50, _72828F },{ 0.0, _72828F },{ 0.0, { 1,1,1 } } };
 	quadrics.push_back(Quadric({ 0, 0, 0 }, 1, 0, { 0, -2, 0 }, _si, N, colors2));
 
 	N[2] = { 0, 0, 1 };
 	quadrics.push_back(Quadric({ 0, 0, 0 }, 1, 0, { 0, 0, -12 }, _si, N, colors2));
 
+	//Quadric q;
+
 	cyPoint3d lightPos(-8, 8, 0);
 	cyPoint3d lightColor(0.8, 0.8, 0.8);
-	cyPoint3d spotLightDir(0, -1, -1);
+	cyPoint3d spotLightDir(1, -1, -1);
 	spotLightDir.Normalize();
-	vector<Light> lights = { { lightPos, lightColor, spotLightDir },{ { 0, 8, 0 },{ 0.7, 0.7, 0.7 } } };
+	vector<Light> lights = { {lightPos, lightColor, spotLightDir }, { { 0, 8, 0 },{ 0.7, 0.7, 0.7 } } };
 	cyPoint3d hitPointToLight, lightReflect, eyeToHitPoint;
 	int objIndex;
 	double temp;
 	cyPoint3d colorTemp;
-	double spotLightComp;
+	double diffuseComp, specularComp, borderComp, spotLightComp;
 	double pointToLightDist;
 	bool isInShadow;
 
@@ -378,7 +377,7 @@ void renderScene()
 	for (int i = 0; i < Xmax; i++)
 	{
 		if (i % 100 == 0)
-			cout << "Rendering..." << int((float(i) / Xmax) * 100) << "%\n";
+			cout << "Rendering..." << int((float(i)/Xmax) * 100) << "%\n";
 
 		for (int j = 0; j < Ymax; j++)
 		{
@@ -394,16 +393,16 @@ void renderScene()
 			{
 				for (int q = 0; q < subPixY; q++)
 				{
-					X = i + (p + rx) / subPixX;
-					Y = j + (q + ry) / subPixY;
-					x = X / Xmax;
-					y = Y / Ymax;
-					pix = vpBottomLeft + scaleX * x * n0 + scaleY * y * n1;
-					eyeToPix = (pix - eye).GetNormalized();
-					objIndex = -1;
-					hitParam = farPlane;
-
-					for (unsigned int index = 0; index < quadrics.size(); index++)
+					X			= i + (p + rx) / subPixX;
+					Y			= j + (q + ry) / subPixY;
+					x			= X / Xmax;
+					y			= Y / Ymax;
+					pix			= vpBottomLeft + scaleX * x * n0 + scaleY * y * n1;
+					eyeToPix	= (pix - eye).GetNormalized();
+					objIndex	= -1;
+					hitParam	= farPlane;
+					
+					for (int index = 0; index < quadrics.size(); index++)
 					{
 						hitParamTemp = quadrics[index].intersect(eye, eyeToPix).second;
 						if (hitParamTemp < hitParam)
@@ -453,7 +452,7 @@ void renderScene()
 
 										isInShadow = shadowRay(objIndex, hitPoint, hitPointToLight, pointToLightDist, quadrics);
 										//spotLightComp = (spotLightDir.x == 0 && spotLightDir.y == 0 && spotLightDir.z == 0) ? 1.0 :
-										//clamp(spotLightDir.Dot(-hitPointToLight), 0.6, 0.61);
+											//clamp(spotLightDir.Dot(-hitPointToLight), 0.6, 0.61);
 										spotLightComp = 1;
 
 										colortemptemp += computeAmbientColor(q);
@@ -487,7 +486,7 @@ void renderScene()
 
 							isInShadow = shadowRay(objIndex, hitPoint, hitPointToLight, pointToLightDist, quadrics);
 							spotLightComp = (spotLightDir.x == 0 && spotLightDir.y == 0 && spotLightDir.z == 0) ? 1.0 :
-								clamp(spotLightDir.Dot(-hitPointToLight), 0.6, 0.61);
+											clamp(spotLightDir.Dot(-hitPointToLight), 0.6, 0.61);
 
 							colorTemp += computeAmbientColor(q);
 
@@ -500,7 +499,7 @@ void renderScene()
 						}
 #else
 						// sub surface scattering
-						for (unsigned int lightIndex = 0; lightIndex < lights.size(); lightIndex++)
+						for (int lightIndex = 0; lightIndex < lights.size(); lightIndex++)
 						{
 							lightPos = lights[lightIndex].pos;
 							lightColor = lights[lightIndex].color;
@@ -522,11 +521,11 @@ void renderScene()
 								isInShadow = true;
 							else
 								isInShadow = false;
-
+							
 							colorTemp += computeAmbientColor(q);
 							//if (isInShadow == false)
 							{
-								for (unsigned int qi = 0; qi < quadrics.size(); qi++)
+								for (int qi = 0; qi < quadrics.size(); qi++)
 								{
 									r += quadrics[qi].intersect_length(hitPoint, hitPointToLight, pointToLightDist);
 								}
@@ -573,7 +572,7 @@ void renderScene()
 	int i, j;
 	FILE *fp = fopen(filename, "wb");
 	fprintf(fp, "P6\n%d %d\n255\n", Xmax, Ymax);
-	for (j = Ymax - 1; j >= 0; --j)
+	for (j = Ymax-1; j >= 0; --j)
 	{
 		for (i = 0; i < Xmax; ++i)
 		{
