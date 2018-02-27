@@ -8,8 +8,8 @@
 using namespace std;
 
 
-#define SAVE_PPM
-#define ANTI_ALIASED
+//#define SAVE_PPM
+//#define ANTI_ALIASED
 #ifndef ANTI_ALIASED
 int subPixX = 1, subPixY = 1;
 #else
@@ -76,13 +76,12 @@ void quit(unsigned char key, int x, int y)
 
 inline double clamp(double val, double low = -1, double high = 1)
 {
-	//return val;
-	double temp = (val - low) / (high - low);
-	if (temp < 0)
+	if (val < low)
 		return 0;
-	if (temp > 1)
+	else if (val > high)
 		return 1;
-	return temp;
+	else
+		return (val - low) / (high - low);
 }
 
 class Quadric
@@ -94,6 +93,8 @@ public:
 	cyPoint3d si;
 	vector<cyPoint3d> N;
 	cyPoint3d color;
+	double ambientFact, diffuseFact, specularFact, borderFact;
+	cyPoint3d ambientColor, diffuseColor, specularColor, borderColor;
 
 	Quadric(cyPoint3d _ai2,
 			double _a21, 
@@ -147,9 +148,9 @@ public:
 void renderScene()
 {
 #if 1
-	cyPoint3d eye(0, 0, 3);
-	cyPoint3d view(0, 0, -1);
-	cyPoint3d up(0, 1, 0);
+	cyPoint3d eye(0, 4, 0);
+	cyPoint3d view(0, -1, -1);
+	cyPoint3d up(0, 1, -1);
 #else
 	cyPoint3d eye(0, 15, -5);
 	cyPoint3d view(0, -1, 0);
@@ -179,27 +180,28 @@ void renderScene()
 	vector<cyPoint3d> N = { {0, 1, 0}, { 1, 0, 0 }, { 0, 0, -1 } };
 	
 	vector<Quadric> quadrics;
-	quadrics.push_back(Quadric(_ai2, _a21, _a00, _qc, {6, 6, 1}, N, _FFEFCA));
-	quadrics.push_back(Quadric(_ai2, _a21, _a00, { -0.8, 1, -8.5 }, {2, 2, 0.7}, N, _EDA16A));
+	//quadrics.push_back(Quadric(_ai2, _a21, _a00, _qc, {6, 6, 1}, N, _FFEFCA));
+	//quadrics.push_back(Quadric(_ai2, _a21, _a00, { -0.8, 1, -8.5 }, {2, 2, 0.7}, N, _EDA16A));
+	quadrics.push_back(Quadric(_ai2, _a21, _a00, { 0, 0, -8 }, { 2, 2, 2 }, N, _DC304B));
 	//quadrics.push_back(Quadric(_ai2, _a21, _a00, { -3, 3, -3 }, {0.8, 0.4, 0.6}, N, _DC304B));
 	//quadrics.push_back(Quadric(_ai2, _a21, _a00, { -1, 0, 2 }, {0.2, 0.4, 0.2}, N, _725E9C));
 	//quadrics.push_back(Quadric(_ai2, _a21, _a00, { 0.6, 0.6, -8 }, _si*0.15, N, _1F2D3D));
 	//quadrics.push_back(Quadric(_ai2, _a21, _a00, { -0.6, 0.6, -8 }, _si*0.15, N, _1F2D3D));
 	/*N[2] = { 0, 1, 0 };
 	quadrics.push_back(Quadric({ 0, 0, 0 }, 1, 0, { 0, -1, -10 }, _si, N, _FFFFFF));*/
-	N[2] = { 0, 0, 1 };
-	quadrics.push_back(Quadric({ 0, 0, 0 }, 1, 0, { 0, 0, -14 }, _si, N, _72828F));
+	N[2] = { 0, 1, 0 };
+	quadrics.push_back(Quadric({ 0, 0, 0 }, 1, 0, { 0, -2, 0 }, _si, N, _72828F));
 
-	cyPoint3d lightPos(-6, 10, -4);
+	cyPoint3d lightPos(-8, 8, 0);
 	cyPoint3d lightColor(1, 1, 1);
 	cyPoint3d hitPointToLight, lightReflect, eyeToHitPoint;
 	int objIndex;
 	double temp;
 	cyPoint3d colorTemp;
 	double diffuseComp, specularComp, borderComp, spotLightComp;
-	double ambientFact(0.05), diffuseFact(50.0), specularFact(0.7), borderFact(1);
+	double ambientFact(0.05), diffuseFact(40.0), specularFact(0.5), borderFact(0.3);
 	double pointToLightDist;
-	cyPoint3d spotLightDir(0, 1, -1);
+	cyPoint3d spotLightDir(1, -1, -1);
 	spotLightDir.Normalize();
 
 #ifndef ANTI_ALIASED
@@ -256,7 +258,7 @@ void renderScene()
 						hitPointToLight = lightPos - hitPoint;
 						pointToLightDist = hitPointToLight.Length();
 						hitPointToLight.Normalize();
-						eyeToHitPoint = eyeToPix; //(hitPoint - eye).GetNormalized();
+						eyeToHitPoint = eyeToPix;
 
 						normalAtHit = q.a21 / q.si[2] * q.N[2];
 						for (int r = 0; r <= 2; r++)
@@ -266,29 +268,27 @@ void renderScene()
 						}
 						normalAtHit.Normalize();
 
-						spotLightComp = clamp(spotLightDir.Dot(hitPointToLight), -0.5, 0.5);
+						spotLightComp = clamp(spotLightDir.Dot(-hitPointToLight), 0.6, 1);
 
 						cyPoint3d ambientColor(1, 1, 1);
 						colorTemp += ambientColor * ambientFact;
 
-						diffuseComp = normalAtHit.Dot(hitPointToLight);
-						diffuseComp *= spotLightComp * spotLightComp;
-						colorTemp += clamp(diffuseComp) * q.color * lightColor * diffuseFact / (pow(pointToLightDist, 1.9));
+						diffuseComp = clamp(normalAtHit.Dot(hitPointToLight), 0, 0.7);
+						diffuseComp *= spotLightComp;
+						colorTemp += diffuseComp * q.color * lightColor * diffuseFact / (pow(pointToLightDist, 2));
 
 						lightReflect = -hitPointToLight + 2 * (normalAtHit.Dot(hitPointToLight)) * normalAtHit;
 						lightReflect.Normalize();
-						specularComp = -lightReflect.Dot(eyeToHitPoint);
-						specularComp *= abs(specularComp) * abs(specularComp) * abs(specularComp);
-						//specularComp *= spotLightComp;
-						cyPoint3d scolor = { 1, 1, 1 };
-						colorTemp += pow(clamp(specularComp, -0.8, 0.8),10.0) * q.color * lightColor * specularFact;
+						specularComp = clamp((-lightReflect).Dot(eyeToHitPoint), 0.94, 0.96);
+						specularComp *= spotLightComp;
+						colorTemp += specularComp * q.color * lightColor * specularFact;
 
-						borderComp = eyeToHitPoint.Dot(normalAtHit);// + 1;
-						cyPoint3d borderColor = { 0.5, 0.5, 0.5 };
-						colorTemp += clamp(borderComp, -0.5, 0.5) * borderColor * borderFact;
+						borderComp = eyeToHitPoint.Dot(normalAtHit) + 1;
+						borderComp *= spotLightComp;
+						cyPoint3d borderColor = { 1, 1, 1 };
+						colorTemp += clamp(borderComp, 0.89, 0.9) * borderColor * borderFact;
 
 						color += colorTemp * weighted;
-						//color += quadrics[objIndex].color * weighted;
 					}
 				}
 			}
@@ -297,7 +297,7 @@ void renderScene()
 			frameBuffer[j][i][1] = (float)color[1];
 			frameBuffer[j][i][2] = (float)color[2];
 
-#if 1
+#if 0
 			for (int k = 0; k <= 2; k++)
 			{
 				if (frameBuffer[j][i][k] < 0.0)
