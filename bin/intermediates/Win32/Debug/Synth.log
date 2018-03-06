@@ -1,5 +1,5 @@
 ﻿  Tracer.cpp
-c:\users\tushar\source\repos\synth5\synth\tracer.cpp(376): warning C4018: '<': signed/unsigned mismatch
-c:\users\tushar\source\repos\synth5\synth\tracer.cpp(232): warning C4101: 'temp': unreferenced local variable
-c:\users\tushar\source\repos\synth5\synth\tracer.cpp(238): warning C4101: 'r': unreferenced local variable
+c:\users\tushar\source\repos\synth5\synth\tracer.cpp(300): warning C4018: '<': signed/unsigned mismatch
+c:\users\tushar\source\repos\synth5\synth\tracer.cpp(156): warning C4101: 'temp': unreferenced local variable
+c:\users\tushar\source\repos\synth5\synth\tracer.cpp(162): warning C4101: 'r': unreferenced local variable
   Synth.vcxproj -> C:\Users\TUSHAR\source\repos\Synth5\bin\Win32\Debug\Synth.exe

@@ -194,35 +194,33 @@ public:
 		int pixelX, pixelY;
 		
 		//plane
-		if (ai2[0] == 0 && ai2[1] == 0 && ai2[2] == 0)
+		if (ai2[0] == 0)
 		{
 			u = N[0].Dot(hitPoint - qc);
 			v = N[1].Dot(hitPoint - qc);
-			/*if (u < 0)
+			if (u < 0)
 			u = - u;
 			if (v < 0)
-			v = - v;*/
+			v = - v;
 			u = u * w;
 			v = v * h;
 			pixelX = (int)(u);
 			pixelY = (int)(v);
-			if (pixelX < 0)
+			/*if (pixelX < 0)
 				pixelX = w - (abs(pixelX) % w);
 			if (pixelY < 0)
-				pixelY = h - (abs(pixelY) % h);
+				pixelY = h - (abs(pixelY) % h);*/
 			ratioX = u - pixelX;
 			ratioY = v - pixelY;
-			color = inputTexture[(pixelY) % h][(pixelX) % w];/* * (1 - ratioX) * (1 - ratioY) +
+			color = inputTexture[(pixelY) % h][(pixelX) % w] * (1 - ratioX) * (1 - ratioY) +
 					inputTexture[(pixelY + 1) % h][pixelX		% w] * (1 - ratioX) * ratioY +
 					inputTexture[pixelY       % h][(pixelX + 1) % w] * ratioX * (1 - ratioY) +
-					inputTexture[(pixelY + 1) % h][(pixelX + 1) % w] * ratioX * ratioY;*/
+					inputTexture[(pixelY + 1) % h][(pixelX + 1) % w] * ratioX * ratioY;
 		}
 
 		//sphere
 		else
 		{
-			cyPoint3d n0, n1, n2;
-
 			double phi, theta, tempX;
 			phi = N[2].Dot(normalAtHit) / si[2];
 			phi = acos(phi);

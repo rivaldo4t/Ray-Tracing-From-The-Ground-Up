@@ -10,9 +10,10 @@
 #include "Quadric.h"
 #include "Light.h"
 #include "color_templates.h"
+#include "Image.h"
+#include "Common.h"
 using namespace std; 
 
-//#define SAVE_PPM
 //#define SUBSURFACESSCATTERING
 //#define AREALIGHT
 //#define ANTI_ALIASED
@@ -79,90 +80,13 @@ inline bool shadowRay(int& objIndex, cyPoint3d& hitPoint, cyPoint3d& hitPointToL
 	return false;
 }
 
-struct PPMObject
-{
-	std::string magicNum;
-	int width, height, maxColVal;
-	char * m_Ptr;
-};
-
-std::istream& operator >>(std::istream &inputStream, PPMObject &obj)
-{
-	inputStream >> obj.magicNum;
-	inputStream >> obj.width >> obj.height >> obj.maxColVal;
-	inputStream.get();
-	size_t size = obj.width * obj.height * 3;
-	obj.m_Ptr = new char[size];
-	inputStream.read(obj.m_Ptr, size);
-	return inputStream;
-}
-
-std::ostream& operator <<(std::ostream &outputStream, const PPMObject &other)
-{
-	outputStream << "P6" << "\n"
-		<< other.width << " "
-		<< other.height << "\n"
-		<< other.maxColVal << "\n"
-		;
-	size_t size = other.width * other.height * 3;
-	outputStream.write(other.m_Ptr, size);
-	return outputStream;
-}
-
 void renderScene()
 {
-	auto ifs = ifstream("tex.ppm", ios::binary);
-	PPMObject ppmObject = PPMObject();
-	ifs >> ppmObject;
-	ifs.close();
-	int k = 0;
-	auto inputTexture = vector<vector<cyPoint3d>>(ppmObject.height, vector<cyPoint3d>(ppmObject.width));
-	for (int j = ppmObject.height - 1; j >= 0; --j)
-	{
-		for (int i = 0; i < ppmObject.width; ++i)
-		{
-			inputTexture[j][i][0] = unsigned char(ppmObject.m_Ptr[k]) / 255.0;
-			inputTexture[j][i][1] = unsigned char(ppmObject.m_Ptr[k + 1]) / 255.0;
-			inputTexture[j][i][2] = unsigned char(ppmObject.m_Ptr[k + 2]) / 255.0;
-			k += 3;
-		}
-	}
-	
-	ifs = ifstream("tex2.ppm", ios::binary);
-	PPMObject ppmObject2 = PPMObject();
-	ifs >> ppmObject2;
-	ifs.close();
-	k = 0;
-	auto inputTexture2 = vector<vector<cyPoint3d>>(ppmObject2.height, vector<cyPoint3d>(ppmObject2.width));
-	for (int j = ppmObject2.height - 1; j >= 0; --j)
-	{
-		for (int i = 0; i < ppmObject2.width; ++i)
-		{
-			inputTexture2[j][i][0] = unsigned char(ppmObject2.m_Ptr[k]) / 255.0;
-			inputTexture2[j][i][1] = unsigned char(ppmObject2.m_Ptr[k + 1]) / 255.0;
-			inputTexture2[j][i][2] = unsigned char(ppmObject2.m_Ptr[k + 2]) / 255.0;
-			k += 3;
-		}
-	}
+	Image I1("tex.jpg");
+	Image I2("tex2.png");
+	Image I3("tex7.jpg");
 
-	ifs = ifstream("tex7.ppm", ios::binary);
-	PPMObject ppmObject3 = PPMObject();
-	ifs >> ppmObject3;
-	ifs.close();
-	k = 0;
-	auto inputTexture3 = vector<vector<cyPoint3d>>(ppmObject3.height, vector<cyPoint3d>(ppmObject3.width));
-	for (int j = ppmObject3.height - 1; j >= 0; --j)
-	{
-		for (int i = 0; i < ppmObject3.width; ++i)
-		{
-			inputTexture3[j][i][0] = unsigned char(ppmObject3.m_Ptr[k]) / 255.0;
-			inputTexture3[j][i][1] = unsigned char(ppmObject3.m_Ptr[k + 1]) / 255.0;
-			inputTexture3[j][i][2] = unsigned char(ppmObject3.m_Ptr[k + 2]) / 255.0;
-			k += 3;
-		}
-	}
-
-#if 1
+#if 0
 	cyPoint3d eye(0, 0, 8);
 	cyPoint3d view(0, 0, -1);
 	cyPoint3d up(0, 1, 0);
@@ -211,13 +135,12 @@ void renderScene()
 	
 	vector<Quadric> quadrics;
 	vector<cyPoint3d> N = { { 0, 0, -1 },{ -1, 0, 0 },{ 0, -1, 0 } };
-	//vector<cyPoint3d> N = { { 0, 1, 0 },{ 0, 0, 1 },{ 1, 0, 0 } };
 	vector<pair<double, cyPoint3d>> colors = { { 0.05, { 1, 1, 1 } }, { 50, _DC304B }, { 3, _DC304B }, { 0.0 ,{ 1, 1, 1 } } };
 	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 2, 2, 0 }, { 2, 2, 2 }, N, colors));
 
 	N[2] = { 0, 1, 0 };
 	vector<pair<double, cyPoint3d>> colors2 = { { 0.05, { 1, 1, 1 } }, { 50, _72828F }, { 0.0, _72828F }, { 0.0, { 1, 1, 1 } } };
-	quadrics.push_back(Quadric({ 0, 0, 0 }, 1, 0, { 0, -4, 0 }, { 0.20, 0.20, 0.20 }, N, colors2));
+	quadrics.push_back(Quadric({ 0, 0, 0 }, 1, 0, { 0, -0.5, 0 }, { 0.20, 0.20, 0.20 }, N, colors2));
 
 	N = { {1, 0 ,0}, {0, 1, 0}, { 0, 0, 1 } };
 	//quadrics.push_back(Quadric({ 0, 0, 0 }, 1, 0, { 0, 0, -6 }, {2, 2, 2}, N, colors2));
@@ -246,11 +169,6 @@ void renderScene()
 	double tempX;
 	vector<cyPoint3d> N2 = { { 0, 0, 1 },{ -1, 0, 0 },{ 0, -1, 0 } };
 	cout << "Navigate using ARROW KEYS ...\n\n";
-#ifndef ANTI_ALIASED
-	cout << "Aliased Image ...\n";
-#else
-	cout << "Anti - Aliased Image ...\n";
-#endif
 
 	for (int i = 0; i < Xmax; i++)
 	{
@@ -304,16 +222,16 @@ void renderScene()
 						theta = tempX >= 0 ? theta : (cy::cyPi<double>() * 2) - theta;
 						u = theta / (cy::cyPi<double>() * 2);
 
-						v = v * ppmObject.height;
-						u = u * ppmObject.width;
+						v = v * I1.height;
+						u = u * I1.width;
 						pixelY = (int)(v);
 						pixelX = (int)(u);
 						ratioY = v - pixelY;
 						ratioX = u - pixelX;
-						color = inputTexture[pixelY][pixelX] * (1 - ratioX) * (1 - ratioY) +
-								inputTexture[pixelY + 1][pixelX] * (1 - ratioX) * ratioY +
-								inputTexture[pixelY][pixelX + 1] * ratioX * (1 - ratioY) +
-								inputTexture[pixelY + 1][pixelX + 1] * ratioX * ratioY;
+						color = I1.texture[pixelY][pixelX] * (1 - ratioX) * (1 - ratioY) +
+								I1.texture[pixelY + 1][pixelX] * (1 - ratioX) * ratioY +
+								I1.texture[pixelY][pixelX + 1] * ratioX * (1 - ratioY) +
+								I1.texture[pixelY + 1][pixelX + 1] * ratioX * ratioY;
 					}
 					else
 					{
@@ -374,7 +292,7 @@ void renderScene()
 #else
 #ifndef SUBSURFACESSCATTERING
 						// normal shadow ray color computation
-						for (int lightIndex = 0; lightIndex < lights.size(); lightIndex++)
+						for (unsigned int lightIndex = 0; lightIndex < lights.size(); lightIndex++)
 						{
 							lightPos = lights[lightIndex].pos;
 							lightColor = lights[lightIndex].color;
@@ -397,9 +315,9 @@ void renderScene()
 								//colorTemp += q.computeSpecularColor(normalAtHit, hitPointToLight, lightColor, eyeToHitPoint, spotLightComp);
 								//colorTemp += q.computeBorderColor(normalAtHit, eyeToHitPoint, spotLightComp);
 								if(q.ai2[0] == 0)
-									colorTemp = q.computeTextureColor(hitPoint, normalAtHit, ppmObject2.width, ppmObject2.height, inputTexture2, inputTexture2);
+									colorTemp = q.computeTextureColor(hitPoint, normalAtHit, I2.width, I2.height, I2.texture, I1.texture);
 								else
-									colorTemp = q.computeTextureColor(hitPoint, normalAtHit, ppmObject.width, ppmObject.height, inputTexture, inputTexture3);
+									colorTemp = q.computeTextureColor(hitPoint, normalAtHit, I1.width, I1.height, I1.texture, I1.texture);
 							}
 						}
 #else
@@ -427,7 +345,7 @@ void renderScene()
 							else
 								isInShadow = false;
 
-							colorTemp += computeAmbientColor(q);
+							colorTemp += q.computeAmbientColor();
 							//if (isInShadow == false)
 							{
 								for (unsigned int qi = 0; qi < quadrics.size(); qi++)
@@ -465,51 +383,7 @@ void renderScene()
 	glFlush();
 	cout << "Rendering...100%.\nDone.\n\n";
 
-#ifdef SAVE_PPM
-#ifndef ANTI_ALIASED
-	const char* filename = "aliased.ppm";
-#else
-	const char* filename = "anti-aliased.ppm";
-#endif
-#if 0
-	int i, j;
-	FILE *fp = fopen(filename, "wb");
-	fprintf(fp, "P6\n%d %d\n255\n", Xmax, Ymax);
-	for (j = Ymax - 1; j >= 0; --j)
-	{
-		for (i = 0; i < Xmax; ++i)
-		{
-			static unsigned char color[3];
-			color[0] = unsigned char(frameBuffer[j][i][0] * 255);
-			color[1] = unsigned char(frameBuffer[j][i][1] * 255);
-			color[2] = unsigned char(frameBuffer[j][i][2] * 255);
-			fwrite(color, 1, 3, fp);
-		}
-	}
-	fclose(fp);
-#else
-	auto ofs = ofstream(filename, ios::binary);
-	PPMObject ppmObject4 = PPMObject();
-	ppmObject4.width = Xmax;
-	ppmObject4.height = Ymax;
-	ppmObject4.maxColVal = 255;
-	ppmObject4.m_Ptr = new char[ppmObject4.width * ppmObject4.height * 3];
-	int k2 = 0;
-	for (int j = Ymax - 1; j >= 0; --j)
-	{
-		for (int i = 0; i < Xmax; ++i)
-		{
-			ppmObject4.m_Ptr[k2] = (frameBuffer[j][i][0] * 255);
-			ppmObject4.m_Ptr[k2 + 1] = (frameBuffer[j][i][1] * 255);
-			ppmObject4.m_Ptr[k2 + 2] = (frameBuffer[j][i][2] * 255);
-			k2 += 3;
-		}
-	}
-	ofs << ppmObject4;
-	ofs.close();
-#endif
-	cout << "\nFile saved as " << filename << endl;
-#endif
+	//Image :: writeImage("image_file.jpg", frameBuffer);
 }
 
 int main(int argc, char** argv)
