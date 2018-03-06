@@ -36,6 +36,17 @@
 #ifndef _CY_CORE_H_INCLUDED_
 #define _CY_CORE_H_INCLUDED_
 
+//tushar.t-----------------------------------------------------------------------
+inline double clamp(double val, double low = -1, double high = 1)
+{
+	if (val < low)
+		return 0;
+	else if (val > high)
+		return 1;
+	else
+		return (val - low) / (high - low);
+}
+
 //-------------------------------------------------------------------------------
 
 #ifndef _CY_CORE_MEMCPY_LIMIT

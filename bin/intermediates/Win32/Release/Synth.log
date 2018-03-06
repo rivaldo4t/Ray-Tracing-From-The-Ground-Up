@@ -1,8 +1,10 @@
-﻿  rayCasting.cpp
-rayCasting.cpp(363): warning C4101: 'temp': unreferenced local variable
+﻿  Tracer.cpp
+Tracer.cpp(377): warning C4018: '<': signed/unsigned mismatch
+Tracer.cpp(233): warning C4101: 'temp': unreferenced local variable
+Tracer.cpp(239): warning C4101: 'r': unreferenced local variable
   Generating code
-  2 of 328 functions ( 0.6%) were compiled, the rest were copied from previous compilation.
+  2 of 520 functions ( 0.4%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    0 functions had inline decision re-evaluated but remain unchanged
+    10 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
-  Synth.vcxproj -> C:\Users\TUSHAR\source\repos\Synth4\bin\Win32\Release\Synth.exe
+  Synth.vcxproj -> C:\Users\TUSHAR\source\repos\Synth5\bin\Win32\Release\Synth.exe

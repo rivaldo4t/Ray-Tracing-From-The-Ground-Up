@@ -147,11 +147,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="rayCasting.cpp" />
+    <ClCompile Include="Tracer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cyCore.h" />
     <ClInclude Include="cyPoint.h" />
+    <ClInclude Include="color_templates.h" />
+    <ClInclude Include="Light.h" />
+    <ClInclude Include="Quadric.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
