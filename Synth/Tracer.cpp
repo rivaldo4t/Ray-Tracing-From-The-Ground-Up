@@ -12,6 +12,7 @@
 #include "color_templates.h"
 #include "Image.h"
 #include "Common.h"
+#include "Camera.h"
 using namespace std; 
 
 //#define SUBSURFACESSCATTERING
@@ -85,8 +86,9 @@ void renderScene()
 	Image I1("tex.jpg");
 	Image I2("tex2.png");
 	Image I3("tex7.jpg");
+	Image I4("tex9.jpg");
 
-#if 0
+#if 1
 	cyPoint3d eye(0, 0, 8);
 	cyPoint3d view(0, 0, -1);
 	cyPoint3d up(0, 1, 0);
@@ -98,15 +100,7 @@ void renderScene()
 	rotVec(view, up, rotX);
 	eye += rotY*view;
 
-	cyPoint3d n2 = view.GetNormalized();
-	cyPoint3d n0 = view.Cross(up).GetNormalized();
-	cyPoint3d n1 = n0.Cross(n2).GetNormalized();
-
-	double focalLength = 8;
-	cyPoint3d viewPortCenter = eye + n2 * focalLength;
-	double scaleX = 10;
-	double scaleY = 10;
-	cyPoint3d vpBottomLeft = viewPortCenter - n0 * (scaleX / 2.0) - n1 * (scaleY / 2.0);
+	Camera cam = {eye, view, up, 10, 10, 8};
 
 #ifdef AREALIGHT
 	cyPoint3d pl(0, 10, -2);
@@ -136,11 +130,11 @@ void renderScene()
 	vector<Quadric> quadrics;
 	vector<cyPoint3d> N = { { 0, 0, -1 },{ -1, 0, 0 },{ 0, -1, 0 } };
 	vector<pair<double, cyPoint3d>> colors = { { 0.05, { 1, 1, 1 } }, { 50, _DC304B }, { 3, _DC304B }, { 0.0 ,{ 1, 1, 1 } } };
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 2, 2, 0 }, { 2, 2, 2 }, N, colors));
+	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 2, 2, 0 }, { 2, 2, 2 }, N, colors));
 
 	N[2] = { 0, 1, 0 };
 	vector<pair<double, cyPoint3d>> colors2 = { { 0.05, { 1, 1, 1 } }, { 50, _72828F }, { 0.0, _72828F }, { 0.0, { 1, 1, 1 } } };
-	quadrics.push_back(Quadric({ 0, 0, 0 }, 1, 0, { 0, -0.5, 0 }, { 0.20, 0.20, 0.20 }, N, colors2));
+	//quadrics.push_back(Quadric({ 0, 0, 0 }, 1, 0, { 0, -0.5, 0 }, { 0.20, 0.20, 0.20 }, N, colors2));
 
 	N = { {1, 0 ,0}, {0, 1, 0}, { 0, 0, 1 } };
 	//quadrics.push_back(Quadric({ 0, 0, 0 }, 1, 0, { 0, 0, -6 }, {2, 2, 2}, N, colors2));
@@ -159,7 +153,8 @@ void renderScene()
 	double pointToLightDist;
 	bool isInShadow;
 
-	double d = 0.1, r;
+	double d = 0.1;
+	double r;
 	cyPoint3d subSurfacePoint, subTolight;
 
 	double u, v;
@@ -168,6 +163,7 @@ void renderScene()
 	int pixelX, pixelY;
 	double tempX;
 	vector<cyPoint3d> N2 = { { 0, 0, 1 },{ -1, 0, 0 },{ 0, -1, 0 } };
+	Quadric infSphere({ 1, 1, 1 }, 0, -1, { 0, 0, 0 }, { 1, 1, 1 }, N2, colors);
 	cout << "Navigate using ARROW KEYS ...\n\n";
 
 	for (int i = 0; i < Xmax; i++)
@@ -193,7 +189,7 @@ void renderScene()
 					Y = j + (q + ry) / subPixY;
 					x = X / Xmax;
 					y = Y / Ymax;
-					pix = vpBottomLeft + scaleX * x * n0 + scaleY * y * n1;
+					pix = cam.viewPortBottomLeft + cam.scaleX * cam.n0 * x + cam.scaleY * cam.n1 * y;
 					eyeToPix = (pix - eye).GetNormalized();
 					objIndex = -1;
 					hitParam = farPlane;
@@ -210,28 +206,7 @@ void renderScene()
 
 					if (objIndex == -1)
 					{
-						//color += _1F2D3D * weighted;
-						phi = N2[2].Dot(eyeToPix);
-						phi = acos(phi);
-						v = phi / cy::cyPi<double>();
-
-						theta = N2[1].Dot(eyeToPix);
-						theta = theta / sin(phi);
-						theta = acos(theta);
-						tempX = N2[0].Dot(eyeToPix);
-						theta = tempX >= 0 ? theta : (cy::cyPi<double>() * 2) - theta;
-						u = theta / (cy::cyPi<double>() * 2);
-
-						v = v * I1.height;
-						u = u * I1.width;
-						pixelY = (int)(v);
-						pixelX = (int)(u);
-						ratioY = v - pixelY;
-						ratioX = u - pixelX;
-						color = I1.texture[pixelY][pixelX] * (1 - ratioX) * (1 - ratioY) +
-								I1.texture[pixelY + 1][pixelX] * (1 - ratioX) * ratioY +
-								I1.texture[pixelY][pixelX + 1] * ratioX * (1 - ratioY) +
-								I1.texture[pixelY + 1][pixelX + 1] * ratioX * ratioY;
+						color = infSphere.computeTextureColor(hitPoint, eyeToPix, I4);
 					}
 					else
 					{
@@ -315,9 +290,9 @@ void renderScene()
 								//colorTemp += q.computeSpecularColor(normalAtHit, hitPointToLight, lightColor, eyeToHitPoint, spotLightComp);
 								//colorTemp += q.computeBorderColor(normalAtHit, eyeToHitPoint, spotLightComp);
 								if(q.ai2[0] == 0)
-									colorTemp = q.computeTextureColor(hitPoint, normalAtHit, I2.width, I2.height, I2.texture, I1.texture);
+									colorTemp = q.computeTextureColor(hitPoint, normalAtHit, I2);
 								else
-									colorTemp = q.computeTextureColor(hitPoint, normalAtHit, I1.width, I1.height, I1.texture, I1.texture);
+									colorTemp = q.computeTextureColor(hitPoint, normalAtHit, I1);
 							}
 						}
 #else

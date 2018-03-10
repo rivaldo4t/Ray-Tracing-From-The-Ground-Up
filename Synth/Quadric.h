@@ -1,5 +1,6 @@
 #pragma once
 #include "cyPoint.h"
+#include "Image.h"
 #include <iostream>
 #include <vector>
 using namespace std;
@@ -187,12 +188,14 @@ public:
 		return color;
 	}
 
-	inline cyPoint3d computeTextureColor(cyPoint3d hitPoint, cyPoint3d normalAtHit, int w, int h, vector<vector<cyPoint3d>>& inputTexture, vector<vector<cyPoint3d>>& inputTexture2)
+	inline cyPoint3d computeTextureColor(cyPoint3d hitPoint, cyPoint3d normalAtHit, Image& image)
 	{
 		cyPoint3d color = {0, 0, 0};
 		double u, v, ratioX, ratioY;
 		int pixelX, pixelY;
-		
+		int w = image.width;
+		int h = image.height;
+
 		//plane
 		if (ai2[0] == 0)
 		{
@@ -212,10 +215,10 @@ public:
 				pixelY = h - (abs(pixelY) % h);*/
 			ratioX = u - pixelX;
 			ratioY = v - pixelY;
-			color = inputTexture[(pixelY) % h][(pixelX) % w] * (1 - ratioX) * (1 - ratioY) +
-					inputTexture[(pixelY + 1) % h][pixelX		% w] * (1 - ratioX) * ratioY +
-					inputTexture[pixelY       % h][(pixelX + 1) % w] * ratioX * (1 - ratioY) +
-					inputTexture[(pixelY + 1) % h][(pixelX + 1) % w] * ratioX * ratioY;
+			color = image.texture[(pixelY) % h][(pixelX) % w] * (1 - ratioX) * (1 - ratioY) +
+					image.texture[(pixelY + 1) % h][pixelX		% w] * (1 - ratioX) * ratioY +
+					image.texture[pixelY       % h][(pixelX + 1) % w] * ratioX * (1 - ratioY) +
+					image.texture[(pixelY + 1) % h][(pixelX + 1) % w] * ratioX * ratioY;
 		}
 
 		//sphere
@@ -239,10 +242,10 @@ public:
 			pixelX = (int)(u);
 			ratioY = v - pixelY;
 			ratioX = u - pixelX;
-			color = inputTexture[pixelY       % h][pixelX       % w] * (1 - ratioX) * (1 - ratioY) +
-					inputTexture[(pixelY + 1) % h][pixelX       % w] * (1 - ratioX) * ratioY +
-					inputTexture[pixelY       % h][(pixelX + 1) % w] * ratioX * (1 - ratioY) +
-					inputTexture[(pixelY + 1) % h][(pixelX + 1) % w] * ratioX * ratioY;
+			color = image.texture[pixelY       % h][pixelX       % w] * (1 - ratioX) * (1 - ratioY) +
+					image.texture[(pixelY + 1) % h][pixelX       % w] * (1 - ratioX) * ratioY +
+					image.texture[pixelY       % h][(pixelX + 1) % w] * ratioX * (1 - ratioY) +
+					image.texture[(pixelY + 1) % h][(pixelX + 1) % w] * ratioX * ratioY;
 		}
 		return color;
 	}

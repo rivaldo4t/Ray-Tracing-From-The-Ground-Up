@@ -150,6 +150,7 @@
     <ClCompile Include="Tracer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="cyCore.h" />
     <ClInclude Include="cyPoint.h" />
