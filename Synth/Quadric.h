@@ -8,6 +8,7 @@ using namespace std;
 class Quadric
 {
 public:
+	int type;
 	cyPoint3d ai2;
 	double a21, a00;
 	cyPoint3d qc;
@@ -16,8 +17,9 @@ public:
 	cyPoint3d color;
 	double ambientFact, diffuseFact, specularFact, borderFact;
 	cyPoint3d ambientColor, diffuseColor, specularColor, borderColor;
+	Image& I;
 
-	Quadric() {};
+	//Quadric() {}
 
 	Quadric(cyPoint3d _ai2,
 		double _a21,
@@ -25,14 +27,24 @@ public:
 		cyPoint3d _qc,
 		cyPoint3d _si,
 		vector<cyPoint3d> _N,
-		vector<pair<double, cyPoint3d>> _colors) :
+		vector<pair<double, cyPoint3d>> _colors, 
+		Image& _I) :
 		ai2(_ai2), a21(_a21), a00(_a00), qc(_qc), si(_si), N(_N),
 		ambientFact(_colors[0].first), ambientColor(_colors[0].second),
 		diffuseFact(_colors[1].first), diffuseColor(_colors[1].second),
 		specularFact(_colors[2].first), specularColor(_colors[2].second),
-		borderFact(_colors[3].first), borderColor(_colors[3].second) {}
+		borderFact(_colors[3].first), borderColor(_colors[3].second),
+		I(_I)
+	{
+		//plane
+		if (ai2[0] == 0 && ai2[1] == 0 && ai2[2] == 0)
+			type = 0;
+		//sphere
+		else
+			type = 1;
+	}
 
-	inline pair<bool, double> intersect(cyPoint3d eye, cyPoint3d eyeToPix)
+	inline double intersect(cyPoint3d eye, cyPoint3d eyeToPix)
 	{
 		double A(0), B(0), C(0), temp1, temp2, D;
 
@@ -52,27 +64,27 @@ public:
 		D = (B * B) - (4 * A * C);
 
 		if (D < 0)
-			return { false, INT_MAX };
+			return INT_MAX;
 
 		if (A == 0)
 		{
 			if ((-C / B) < 0)
-				return { false, INT_MAX };
+				return INT_MAX;
 			else
-				return { true, (-C / B) };
+				return (-C / B);
 		}
 
 		temp1 = (-B + sqrt(D)) / (2 * A);
 		temp2 = (-B - sqrt(D)) / (2 * A);
 
 		if (temp1 > 0 && temp2 > 0)
-			return { true, temp2 };
+			return temp2;
 		else if (temp1 > 0)
-			return { true, temp1 };
-		else if (temp2 > 0)
-			return { true, temp2 };
+			return temp1;
+		/*else if (temp2 > 0)
+			return temp2;*/
 		else
-			return { false, INT_MAX };
+			return INT_MAX;
 	}
 
 	inline double intersect_length(cyPoint3d& eye, cyPoint3d& eyeToPix, double lightdist)
@@ -150,19 +162,10 @@ public:
 		return ambientFact * ambientColor;
 	}
 
-	inline cyPoint3d computeDiffuseColor(cyPoint3d& normalAtHit, cyPoint3d& hitPointToLight, cyPoint3d& lightColor, double& pointToLightDist, double& spotLightComp)
+	inline cyPoint3d computeDiffuseColor(cyPoint3d& normalAtHit, cyPoint3d& hitPointToLight, cyPoint3d& lightColor, double& pointToLightDist, double& spotLightComp, double t)
 	{
 		cyPoint3d color = { 0, 0, 0 };
-		double diffuseComp = clamp(normalAtHit.Dot(hitPointToLight), 0, 0.5);
-		diffuseComp *= spotLightComp;
-		color = diffuseComp * diffuseColor * diffuseFact * lightColor / (pow(pointToLightDist, 2));
-		return color;
-	}
-
-	inline cyPoint3d computeDiffuseColor2(cyPoint3d& normalAtHit, cyPoint3d& hitPointToLight, cyPoint3d& lightColor, double& pointToLightDist, double t, double& spotLightComp)
-	{
-		cyPoint3d color = { 0, 0, 0 };
-		double diffuseComp = clamp(t, 0, 1);
+		double diffuseComp = t == 0.0 ? clamp(normalAtHit.Dot(hitPointToLight), 0, 0.5) : clamp(t, 0, 1);
 		diffuseComp *= spotLightComp;
 		color = diffuseComp * diffuseColor * diffuseFact * lightColor / (pow(pointToLightDist, 2));
 		return color;
@@ -188,64 +191,68 @@ public:
 		return color;
 	}
 
-	inline cyPoint3d computeTextureColor(cyPoint3d hitPoint, cyPoint3d normalAtHit, Image& image)
+	inline cyPoint3d computeTextureColor(cyPoint3d hitPoint, cyPoint3d normalAtHit)
 	{
 		cyPoint3d color = {0, 0, 0};
 		double u, v, ratioX, ratioY;
 		int pixelX, pixelY;
-		int w = image.width;
-		int h = image.height;
+		int w = I.width;
+		int h = I.height;
 
-		//plane
-		if (ai2[0] == 0)
+		switch(type)
 		{
-			u = N[0].Dot(hitPoint - qc);
-			v = N[1].Dot(hitPoint - qc);
-			if (u < 0)
-			u = - u;
-			if (v < 0)
-			v = - v;
-			u = u * w;
-			v = v * h;
-			pixelX = (int)(u);
-			pixelY = (int)(v);
-			/*if (pixelX < 0)
+			//plane
+			case 0:
+			{
+				u = N[0].Dot(hitPoint - qc);
+				v = N[1].Dot(hitPoint - qc);
+				if (u < 0)
+					u = -u;
+				if (v < 0)
+					v = -v;
+				u = u * w;
+				v = v * h;
+				pixelX = (int)(u);
+				pixelY = (int)(v);
+				/*if (pixelX < 0)
 				pixelX = w - (abs(pixelX) % w);
-			if (pixelY < 0)
+				if (pixelY < 0)
 				pixelY = h - (abs(pixelY) % h);*/
-			ratioX = u - pixelX;
-			ratioY = v - pixelY;
-			color = image.texture[(pixelY) % h][(pixelX) % w] * (1 - ratioX) * (1 - ratioY) +
-					image.texture[(pixelY + 1) % h][pixelX		% w] * (1 - ratioX) * ratioY +
-					image.texture[pixelY       % h][(pixelX + 1) % w] * ratioX * (1 - ratioY) +
-					image.texture[(pixelY + 1) % h][(pixelX + 1) % w] * ratioX * ratioY;
-		}
+				ratioX = u - pixelX;
+				ratioY = v - pixelY;
+				color = I.texture[(pixelY) % h][(pixelX) % w] * (1 - ratioX) * (1 - ratioY) +
+						I.texture[(pixelY + 1) % h][pixelX		% w] * (1 - ratioX) * ratioY +
+						I.texture[pixelY       % h][(pixelX + 1) % w] * ratioX * (1 - ratioY) +
+						I.texture[(pixelY + 1) % h][(pixelX + 1) % w] * ratioX * ratioY;
+				break;
+			}
+			//sphere
+			case 1:
+			{
+				double phi, theta, tempX;
+				phi = N[2].Dot(normalAtHit) / si[2];
+				phi = acos(phi);
+				v = phi / cy::cyPi<double>();
 
-		//sphere
-		else
-		{
-			double phi, theta, tempX;
-			phi = N[2].Dot(normalAtHit) / si[2];
-			phi = acos(phi);
-			v = phi / cy::cyPi<double>();
-
-			theta = N[1].Dot(normalAtHit) / si[1];
-			theta = theta / sin(phi);
-			theta = acos(theta);
-			tempX = N[0].Dot(normalAtHit) / si[0];
-			theta = tempX >= 0 ? theta : (cy::cyPi<double>() * 2) - theta;
-			u = theta / (cy::cyPi<double>() * 2);
-			//handle negative dot product
-			v = v * h;
-			u = u * w;
-			pixelY = (int)(v);
-			pixelX = (int)(u);
-			ratioY = v - pixelY;
-			ratioX = u - pixelX;
-			color = image.texture[pixelY       % h][pixelX       % w] * (1 - ratioX) * (1 - ratioY) +
-					image.texture[(pixelY + 1) % h][pixelX       % w] * (1 - ratioX) * ratioY +
-					image.texture[pixelY       % h][(pixelX + 1) % w] * ratioX * (1 - ratioY) +
-					image.texture[(pixelY + 1) % h][(pixelX + 1) % w] * ratioX * ratioY;
+				theta = N[1].Dot(normalAtHit) / si[1];
+				theta = theta / sin(phi);
+				theta = acos(theta);
+				tempX = N[0].Dot(normalAtHit) / si[0];
+				theta = tempX >= 0 ? theta : (cy::cyPi<double>() * 2) - theta;
+				u = theta / (cy::cyPi<double>() * 2);
+				//handle negative dot product
+				v = v * h;
+				u = u * w;
+				pixelY = (int)(v);
+				pixelX = (int)(u);
+				ratioY = v - pixelY;
+				ratioX = u - pixelX;
+				color = I.texture[pixelY       % h][pixelX       % w] * (1 - ratioX) * (1 - ratioY) +
+						I.texture[(pixelY + 1) % h][pixelX       % w] * (1 - ratioX) * ratioY +
+						I.texture[pixelY       % h][(pixelX + 1) % w] * ratioX * (1 - ratioY) +
+						I.texture[(pixelY + 1) % h][(pixelX + 1) % w] * ratioX * ratioY;
+				break;
+			}
 		}
 		return color;
 	}

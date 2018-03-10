@@ -13,6 +13,8 @@ public:
 	uint8_t* data;
 	vector<vector<cyPoint3d>> texture;
 
+	Image() {}
+
 	Image(const char* path)
 	{
 		data = stbi_load(path, &width, &height, &bpp, 3);
