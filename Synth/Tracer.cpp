@@ -2,14 +2,13 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include <fstream>
 #include <math.h>
 #include <algorithm>
 #include "cyPoint.h"
 #include "cyCore.h"
 #include "Quadric.h"
 #include "Light.h"
-#include "color_templates.h"
+#include "Colors.h"
 #include "Image.h"
 #include "Common.h"
 #include "Camera.h"
@@ -157,11 +156,6 @@ void renderScene()
 	double r;
 	cyPoint3d subSurfacePoint, subTolight;
 
-	double u, v;
-	double phi, theta;
-	double ratioX, ratioY;
-	int pixelX, pixelY;
-	double tempX;
 	vector<cyPoint3d> N2 = { { 0, 0, 1 },{ -1, 0, 0 },{ 0, -1, 0 } };
 	Quadric infSphere({ 1, 1, 1 }, 0, -1, { 0, 0, 0 }, { 1, 1, 1 }, N2, colors);
 	cout << "Navigate using ARROW KEYS ...\n\n";

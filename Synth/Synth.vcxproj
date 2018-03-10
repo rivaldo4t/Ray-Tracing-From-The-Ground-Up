@@ -154,7 +154,7 @@
     <ClInclude Include="Common.h" />
     <ClInclude Include="cyCore.h" />
     <ClInclude Include="cyPoint.h" />
-    <ClInclude Include="color_templates.h" />
+    <ClInclude Include="Colors.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Quadric.h" />
