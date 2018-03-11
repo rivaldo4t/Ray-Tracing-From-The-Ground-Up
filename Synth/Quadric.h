@@ -35,14 +35,14 @@ public:
 		specularFact(_colors[2].first), specularColor(_colors[2].second),
 		borderFact(_colors[3].first), borderColor(_colors[3].second),
 		I(_I)
-	{
-		//plane
-		if (ai2[0] == 0 && ai2[1] == 0 && ai2[2] == 0)
-			type = 0;
-		//sphere
-		else
-			type = 1;
-	}
+		{
+			//plane
+			if (ai2[0] == 0 && ai2[1] == 0 && ai2[2] == 0)
+				type = 0;
+			//sphere
+			else
+				type = 1;
+		}
 
 	inline double intersect(cyPoint3d eye, cyPoint3d eyeToPix)
 	{

@@ -1,13 +1,7 @@
 ﻿  Tracer.cpp
-Tracer.cpp(74): warning C4101: 'subToLightDist': unreferenced local variable
-Tracer.cpp(73): warning C4101: 'isInShadow': unreferenced local variable
-Tracer.cpp(75): warning C4101: 'r': unreferenced local variable
-Tracer.cpp(75): warning C4101: 'd': unreferenced local variable
-Tracer.cpp(74): warning C4101: 'pointToLightDist': unreferenced local variable
-Tracer.cpp(74): warning C4101: 'spotLightComp': unreferenced local variable
   Generating code
-  18 of 611 functions ( 2.9%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    12 functions had inline decision re-evaluated but remain unchanged
+  4 of 632 functions ( 0.6%) were compiled, the rest were copied from previous compilation.
+    1 functions were new in current compilation
+    32 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   Synth.vcxproj -> C:\Users\TUSHAR\source\repos\Synth5\bin\Win32\Release\Synth.exe

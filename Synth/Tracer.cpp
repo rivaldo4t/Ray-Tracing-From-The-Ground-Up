@@ -19,10 +19,7 @@ int subPixX = 4, subPixY = 4;
 
 void renderScene()
 {
-	Image I1("tex.jpg");
-	Image I2("tex2.png");
-	Image I3("tex7.jpg");
-	Image I4("tex9.jpg");
+	double weighted = 1.0 / (subPixX * subPixY);
 
 #if 1
 	cyPoint3d eye(0, 4, 8);
@@ -38,10 +35,6 @@ void renderScene()
 
 	Camera cam = {eye, view, up, 10, 10, 8};
 
-	cyPoint3d color, pix, camToPix, hitPoint, normalAtHit;
-	double X, Y, x, y, rx, ry, hitParam, hitParamTemp;
-	double weighted = 1.0 / (subPixX * subPixY);
-	
 	vector<Quadric> quadrics;
 	vector<cyPoint3d> N = { { 0, 0, -1 },{ -1, 0, 0 },{ 0, -1, 0 } };
 	vector<pair<double, cyPoint3d>> colors = { { 0.05, { 1, 1, 1 } }, { 50, _725E9C }, { 3, _725E9C }, { 0.0 ,{ 1, 1, 1 } } };
@@ -57,22 +50,10 @@ void renderScene()
 	N = { { 0, 0, 1 },{ -1, 0, 0 },{ 0, -1, 0 } };
 	Quadric infSphere({ 1, 1, 1 }, 0, -1, { 0, 0, 0 }, { 1, 1, 1 }, N, colors, I4);
 
-	cyPoint3d lightPos(-8, 8, 0);
-	cyPoint3d lightColor(0.8, 0.8, 0.8);
-	cyPoint3d spotLightDir(0, -1, -1);
-	spotLightDir.Normalize();
-	vector<Light> lights = { { lightPos, lightColor, spotLightDir }, { { 0, 8, 0 },{ 0.7, 0.7, 0.7 } } };
-	
+	vector<Light> lights = {	{ { -8, 8, 0 }, { 0.8, 0.8, 0.8 }, { 0, -1, -1 } }, 
+								{ { 0, 8, 0 }, { 0.7, 0.7, 0.7 } } };
 	AreaLight areaLight({ 0, 10, -2 }, { 1, 1, 1 }, { 0, -1, 0 }, { 0, 0, 1 });
 	vector<AreaLight> areaLights = { areaLight };
-
-	cyPoint3d hitPointToLight, lightReflect, camToHitPoint;
-	cyPoint3d colorTemp;
-	cyPoint3d subSurfacePoint, subTolight;
-	int objIndex;
-	bool isInShadow;
-	double spotLightComp, pointToLightDist, subToLightDist;
-	double d, r;
 
 	cout << "Navigate using ARROW KEYS ...\n\n";
 
@@ -143,7 +124,7 @@ void renderScene()
 
 							isInShadow = shadowRay(objIndex, hitPoint, hitPointToLight, pointToLightDist, quadrics);
 							spotLightComp = (spotLightDir.x == 0 && spotLightDir.y == 0 && spotLightDir.z == 0) ? 1.0 :
-								clamp(spotLightDir.Dot(-hitPointToLight), 0.5, 0.51);
+								clamp(spotLightDir.GetNormalized().Dot(-hitPointToLight), 0.5, 0.51);
 
 							colorTemp += q.computeAmbientColor();
 

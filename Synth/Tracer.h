@@ -10,10 +10,28 @@
 #include "Camera.h"
 using namespace std;
 
+Image I1("tex.jpg");
+Image I2("tex2.png");
+Image I3("tex7.jpg");
+Image I4("tex9.jpg");
+
 double rotX = 0.0, rotY = 0.0;
 const int Xmax = 600, Ymax = 600;
 double farPlane = 100;
 float frameBuffer[Ymax][Xmax][3] = { 0 };
+
+cyPoint3d color, pix, camToPix, hitPoint, normalAtHit;
+double X, Y, x, y, rx, ry;
+double hitParam, hitParamTemp;
+
+cyPoint3d lightPos, lightColor, spotLightDir;
+cyPoint3d hitPointToLight, lightReflect, camToHitPoint;
+cyPoint3d colorTemp;
+cyPoint3d subSurfacePoint, subTolight;
+int objIndex;
+bool isInShadow;
+double spotLightComp, pointToLightDist, subToLightDist;
+double d, r;
 
 inline void keyRot(int key, int x, int y)
 {
