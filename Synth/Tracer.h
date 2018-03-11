@@ -1,6 +1,13 @@
 #pragma once
 #include <iostream>
 #include "cyPoint.h"
+#include "cyCore.h"
+#include "Quadric.h"
+#include "Light.h"
+#include "Colors.h"
+#include "Image.h"
+#include "Common.h"
+#include "Camera.h"
 using namespace std;
 
 double rotX = 0.0, rotY = 0.0;

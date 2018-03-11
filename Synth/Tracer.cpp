@@ -4,14 +4,6 @@
 #include <iostream>
 #include <math.h>
 #include <algorithm>
-#include "cyPoint.h"
-#include "cyCore.h"
-#include "Quadric.h"
-#include "Light.h"
-#include "Colors.h"
-#include "Image.h"
-#include "Common.h"
-#include "Camera.h"
 #include "Tracer.h"
 using namespace std; 
 
@@ -37,7 +29,7 @@ void renderScene()
 	cyPoint3d view(0, 0, -1);
 	cyPoint3d up(0, 1, 0);
 #else
-	cyPoint3d eye(0, 4, 0);
+	cyPoint3d eye(0, 10, 0);
 	cyPoint3d view(0, -1, -1);
 	cyPoint3d up(0, 1, -1);
 #endif
@@ -75,16 +67,12 @@ void renderScene()
 	vector<AreaLight> areaLights = { areaLight };
 
 	cyPoint3d hitPointToLight, lightReflect, camToHitPoint;
-	int objIndex;
-	double temp;
 	cyPoint3d colorTemp;
-	double spotLightComp;
-	double pointToLightDist;
-	bool isInShadow;
-	double d = 0.1;
-	double r;
 	cyPoint3d subSurfacePoint, subTolight;
-	double subToLightDist;
+	int objIndex;
+	bool isInShadow;
+	double spotLightComp, pointToLightDist, subToLightDist;
+	double d, r;
 
 	cout << "Navigate using ARROW KEYS ...\n\n";
 
@@ -137,8 +125,8 @@ void renderScene()
 						hitPoint = cam.pos + camToPix * hitParam;
 
 #ifdef AREALIGHT
-						for(unsigned int a = 0; a < areaLights.size(); a++)
-							colorTemp += computeColorFromAreaLight(hitPoint, camToPix, areaLights[a], objIndex, q, quadrics);
+					for(unsigned int a = 0; a < areaLights.size(); a++)
+						colorTemp += computeColorFromAreaLight(hitPoint, camToPix, areaLights[a], objIndex, q, quadrics);
 #else
 #ifndef SUBSURFACESSCATTERING
 						// normal shadow ray color computation
