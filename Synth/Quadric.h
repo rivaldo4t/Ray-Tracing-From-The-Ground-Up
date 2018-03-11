@@ -162,7 +162,7 @@ public:
 		return ambientFact * ambientColor;
 	}
 
-	inline cyPoint3d computeDiffuseColor(cyPoint3d& normalAtHit, cyPoint3d& hitPointToLight, cyPoint3d& lightColor, double& pointToLightDist, double& spotLightComp, double t)
+	inline cyPoint3d computeDiffuseColor(cyPoint3d& normalAtHit, cyPoint3d& hitPointToLight, cyPoint3d& lightColor, double pointToLightDist, double spotLightComp = 1.0, double t = 0.0)
 	{
 		cyPoint3d color = { 0, 0, 0 };
 		double diffuseComp = t == 0.0 ? clamp(normalAtHit.Dot(hitPointToLight), 0, 0.5) : clamp(t, 0, 1);
@@ -171,7 +171,7 @@ public:
 		return color;
 	}
 
-	inline cyPoint3d computeSpecularColor(cyPoint3d& normalAtHit, cyPoint3d& hitPointToLight, cyPoint3d& lightColor, cyPoint3d& eyeToHitPoint, double& spotLightComp)
+	inline cyPoint3d computeSpecularColor(cyPoint3d& normalAtHit, cyPoint3d& hitPointToLight, cyPoint3d& lightColor, cyPoint3d& eyeToHitPoint, double spotLightComp = 1.0)
 	{
 		cyPoint3d color = { 0, 0, 0 };
 		cyPoint3d lightReflect = -hitPointToLight + 2 * (normalAtHit.Dot(hitPointToLight)) * normalAtHit;
@@ -182,7 +182,7 @@ public:
 		return color;
 	}
 
-	inline cyPoint3d computeBorderColor(cyPoint3d& normalAtHit, cyPoint3d& eyeToHitPoint, double& spotLightComp)
+	inline cyPoint3d computeBorderColor(cyPoint3d& normalAtHit, cyPoint3d& eyeToHitPoint, double spotLightComp = 1.0)
 	{
 		cyPoint3d color = { 0, 0, 0 };
 		double borderComp = eyeToHitPoint.Dot(normalAtHit) + 1;

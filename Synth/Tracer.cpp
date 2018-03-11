@@ -12,6 +12,7 @@
 #include "Image.h"
 #include "Common.h"
 #include "Camera.h"
+#include "Tracer.h"
 using namespace std; 
 
 //#define SUBSURFACESSCATTERING
@@ -23,62 +24,6 @@ int subPixX = 1, subPixY = 1;
 #else
 int subPixX = 4, subPixY = 4;
 #endif
-
-double rotX = 0.0, rotY = 0.0;
-const int Xmax = 600, Ymax = 600;
-double farPlane = 100;
-float frameBuffer[Ymax][Xmax][3] = { 0 };
-
-static void keyRot(int key, int x, int y)
-{
-	switch (key)
-	{
-	case GLUT_KEY_UP:
-		rotY -= 1.0;
-		glutPostRedisplay();
-		break;
-	case GLUT_KEY_DOWN:
-		rotY += 1.0;
-		glutPostRedisplay();
-		break;
-	case GLUT_KEY_LEFT:
-		rotX -= 5.0;
-		glutPostRedisplay();
-		break;
-	case GLUT_KEY_RIGHT:
-		rotX += 5.0;
-		glutPostRedisplay();
-		break;
-	}
-}
-
-inline void rotVec(cyPoint3d& v1, cyPoint3d v2, double degAngle)
-{
-	v2.Normalize();
-	double radAngle = degAngle * cy::cyPi<double>() / 180;
-	double cos_theta = cos(radAngle);
-	double sin_theta = sin(radAngle);
-	v1 = (v1 * cos_theta) + (v2.Cross(v1) * sin_theta) + (v2 * v2.Dot(v1) * (1 - cos_theta));
-	//v1.Normalize();
-}
-
-void quit(unsigned char key, int x, int y)
-{
-	if (key == 27) exit(0);
-}
-
-inline bool shadowRay(int& objIndex, cyPoint3d& hitPoint, cyPoint3d& hitPointToLight, double& pointToLightDist, vector<Quadric>& quadrics)
-{
-	for (unsigned int i = 0; i < quadrics.size(); i++)
-	{
-		if (i == objIndex)
-			continue;
-		double hitParamTemp = quadrics[i].intersect(hitPoint, hitPointToLight);
-		if (hitParamTemp < pointToLightDist)
-			return true;
-	}
-	return false;
-}
 
 void renderScene()
 {
@@ -101,42 +46,21 @@ void renderScene()
 
 	Camera cam = {eye, view, up, 10, 10, 8};
 
-#ifdef AREALIGHT
-	cyPoint3d pl(0, 10, -2);
-	cyPoint3d ldir(0, -1, 0);
-	cyPoint3d lup(0, 0, 1);
-	cyPoint3d plcolor(1, 1, 1);
-	cyPoint3d n22 = ldir.GetNormalized();
-	cyPoint3d n00 = ldir.Cross(lup).GetNormalized();
-	cyPoint3d n11 = n00.Cross(n22).GetNormalized();
-
-	int pxmax = 8, pymax = 8;
-#ifndef ANTI_ALIASED
-	int pxsub = 1, pysub = 1;
-#else
-	int pxsub = 4, pysub = 4;
-#endif
-	double pX, pY, px, py, prx, pry;
-	cyPoint3d plpix;
-	cyPoint3d colortemptemp;
-	double pweighted = 1.0 / (pxsub * pysub);
-#endif
-
 	cyPoint3d color, pix, camToPix, hitPoint, normalAtHit;
 	double X, Y, x, y, rx, ry, hitParam, hitParamTemp;
 	double weighted = 1.0 / (subPixX * subPixY);
 	
 	vector<Quadric> quadrics;
 	vector<cyPoint3d> N = { { 0, 0, -1 },{ -1, 0, 0 },{ 0, -1, 0 } };
-	vector<pair<double, cyPoint3d>> colors = { { 0.05, { 1, 1, 1 } }, { 5, _DC304B }, { 3, _DC304B }, { 0.0 ,{ 1, 1, 1 } } };
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 2, -6 }, { 2, 2, 2 }, N, colors, I1));
+	vector<pair<double, cyPoint3d>> colors = { { 0.05, { 1, 1, 1 } }, { 50, _725E9C }, { 3, _725E9C }, { 0.0 ,{ 1, 1, 1 } } };
+	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 4, -6 }, { 2, 2, 2 }, N, colors, I1));
 
 	N = { { 1, 0 ,0 },{ 0, 0, 1 },{ 0, 1, 0 } };
 	colors = { { 0.05, { 1, 1, 1 } }, { 50, _72828F }, { 0.0, _72828F }, { 0.0, { 1, 1, 1 } } };
-	//quadrics.push_back(Quadric({ 0, 0, 0 }, 1, 0, { 0, -0.5, 0 }, { 0.20, 0.20, 0.20 }, N, colors, I2));
+	quadrics.push_back(Quadric({ 0, 0, 0 }, 1, 0, { 0, -0.5, 0 }, { 0.20, 0.20, 0.20 }, N, colors, I2));
 
 	N = { {1, 0 ,0}, {0, 1, 0}, { 0, 0, 1 } };
-	//quadrics.push_back(Quadric({ 0, 0, 0 }, 1, 0, { 0, 0, -16 }, {2, 2, 2}, N, colors, I2));
+	quadrics.push_back(Quadric({ 0, 0, 0 }, 1, 0, { 0, 0, -16 }, {2, 2, 2}, N, colors, I2));
 
 	N = { { 0, 0, 1 },{ -1, 0, 0 },{ 0, -1, 0 } };
 	Quadric infSphere({ 1, 1, 1 }, 0, -1, { 0, 0, 0 }, { 1, 1, 1 }, N, colors, I4);
@@ -146,6 +70,9 @@ void renderScene()
 	cyPoint3d spotLightDir(0, -1, -1);
 	spotLightDir.Normalize();
 	vector<Light> lights = { { lightPos, lightColor, spotLightDir }, { { 0, 8, 0 },{ 0.7, 0.7, 0.7 } } };
+	
+	AreaLight areaLight({ 0, 10, -2 }, { 1, 1, 1 }, { 0, -1, 0 }, { 0, 0, 1 });
+	vector<AreaLight> areaLights = { areaLight };
 
 	cyPoint3d hitPointToLight, lightReflect, camToHitPoint;
 	int objIndex;
@@ -205,60 +132,13 @@ void renderScene()
 					}
 					else
 					{
-#ifndef AREALIGHT
 						colorTemp = { 0,0,0 };
-#endif
 						Quadric q = quadrics[objIndex];
 						hitPoint = cam.pos + camToPix * hitParam;
 
 #ifdef AREALIGHT
-						for (int pi = 0; pi < pxmax; pi++)
-						{
-							for (int pj = 0; pj < pymax; pj++)
-							{
-								prx = (rand() % 10) / 10.0;
-								pry = (rand() % 10) / 10.0;
-								colorTemp = { 0,0,0 };
-								for (int psub = 0; psub < pxsub; psub++)
-								{
-									for (int qsub = 0; qsub < pysub; qsub++)
-									{
-										colortemptemp = { 0,0,0 };
-										pX = pi + (psub + prx) / pxsub;
-										pY = pj + (qsub + pry) / pysub;
-										px = pX / pxmax;
-										py = pY / pymax;
-										plpix = pl + scaleX * 0.1 * px * n00 + scaleY * 0.1 * py * n11;
-
-										lightPos = plpix;
-										lightColor = plcolor;
-										//spotLightDir = {0, 0, 0};
-										hitPointToLight = lightPos - hitPoint;
-										pointToLightDist = hitPointToLight.Length();
-										hitPointToLight.Normalize();
-										camToHitPoint = camToPix;
-										normalAtHit = q.normalAtHitPoint(hitPoint);
-
-										isInShadow = shadowRay(objIndex, hitPoint, hitPointToLight, pointToLightDist, quadrics);
-										//spotLightComp = (spotLightDir.x == 0 && spotLightDir.y == 0 && spotLightDir.z == 0) ? 1.0 :
-										//clamp(spotLightDir.Dot(-hitPointToLight), 0.5, 0.51);
-										spotLightComp = 1;
-
-										colortemptemp += q.computeAmbientColor();
-
-										if (isInShadow == false)
-										{
-											colortemptemp += q.computeDiffuseColor(normalAtHit, hitPointToLight, lightColor, pointToLightDist, spotLightComp, 0.0);
-											colortemptemp += q.computeSpecularColor(normalAtHit, hitPointToLight, lightColor, camToHitPoint, spotLightComp);
-											colortemptemp += q.computeBorderColor(normalAtHit, camToHitPoint, spotLightComp);
-										}
-
-										colorTemp += colortemptemp * pweighted;
-									}
-								}
-
-							}
-						}
+						for(unsigned int a = 0; a < areaLights.size(); a++)
+							colorTemp += computeColorFromAreaLight(hitPoint, camToPix, areaLights[a], objIndex, q, quadrics);
 #else
 #ifndef SUBSURFACESSCATTERING
 						// normal shadow ray color computation
@@ -281,10 +161,10 @@ void renderScene()
 
 							if (isInShadow == false)
 							{
-								colorTemp += q.computeDiffuseColor(normalAtHit, hitPointToLight, lightColor, pointToLightDist, spotLightComp, 0.0);
+								colorTemp += q.computeDiffuseColor(normalAtHit, hitPointToLight, lightColor, pointToLightDist, spotLightComp);
 								colorTemp += q.computeSpecularColor(normalAtHit, hitPointToLight, lightColor, camToHitPoint, spotLightComp);
 								colorTemp += q.computeBorderColor(normalAtHit, camToHitPoint, spotLightComp);
-								colorTemp = q.computeTextureColor(hitPoint, normalAtHit);
+								//colorTemp = q.computeTextureColor(hitPoint, normalAtHit);
 							}
 						}
 #else
