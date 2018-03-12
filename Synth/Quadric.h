@@ -254,6 +254,8 @@ public:
 				break;
 			}
 		}
+		diffuseColor = color;
+		specularColor = color;
 		return color;
 	}
 };

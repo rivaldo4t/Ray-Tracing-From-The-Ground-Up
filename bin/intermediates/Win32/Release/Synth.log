@@ -2,6 +2,6 @@
   Generating code
   4 of 632 functions ( 0.6%) were compiled, the rest were copied from previous compilation.
     1 functions were new in current compilation
-    32 functions had inline decision re-evaluated but remain unchanged
+    12 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   Synth.vcxproj -> C:\Users\TUSHAR\source\repos\Synth5\bin\Win32\Release\Synth.exe

@@ -55,12 +55,15 @@ void renderScene()
 	AreaLight areaLight({ 0, 10, -2 }, { 1, 1, 1 }, { 0, -1, 0 }, { 0, 0, 1 });
 	vector<AreaLight> areaLights = { areaLight };
 
-	cout << "Navigate using ARROW KEYS ...\n\n";
+	cout << "Navigate using ARROW KEYS ...\n";
+	for (int space = 0; space < Xmax / 50; space++)
+		cout << " ";
+	cout << "|\n";
 
 	for (int i = 0; i < Xmax; i++)
 	{
-		if (i % 100 == 0)
-			cout << "Rendering..." << int((float(i) / Xmax) * 100) << "%\n";
+		if (i % 50 == 0)
+			cout << "#";
 
 		for (int j = 0; j < Ymax; j++)
 		{
@@ -104,12 +107,14 @@ void renderScene()
 						colorTemp = { 0,0,0 };
 						Quadric q = quadrics[objIndex];
 						hitPoint = cam.pos + camToPix * hitParam;
+						camToHitPoint = camToPix;
+						normalAtHit = q.normalAtHitPoint(hitPoint);
+						q.computeTextureColor(hitPoint, normalAtHit);
 
 #ifdef AREALIGHT
 					for(unsigned int a = 0; a < areaLights.size(); a++)
 						colorTemp += computeColorFromAreaLight(hitPoint, camToPix, areaLights[a], objIndex, q, quadrics);
 #else
-#ifndef SUBSURFACESSCATTERING
 						// normal shadow ray color computation
 						for (unsigned int lightIndex = 0; lightIndex < lights.size(); lightIndex++)
 						{
@@ -119,64 +124,41 @@ void renderScene()
 							hitPointToLight = lightPos - hitPoint;
 							pointToLightDist = hitPointToLight.Length();
 							hitPointToLight.Normalize();
-							camToHitPoint = camToPix;
-							normalAtHit = q.normalAtHitPoint(hitPoint);
 
-							isInShadow = shadowRay(objIndex, hitPoint, hitPointToLight, pointToLightDist, quadrics);
 							spotLightComp = (spotLightDir.x == 0 && spotLightDir.y == 0 && spotLightDir.z == 0) ? 1.0 :
 								clamp(spotLightDir.GetNormalized().Dot(-hitPointToLight), 0.5, 0.51);
-
 							colorTemp += q.computeAmbientColor();
 
+#ifndef SUBSURFACESSCATTERING
+							isInShadow = shadowRay(objIndex, hitPoint, hitPointToLight, pointToLightDist, quadrics);
 							if (isInShadow == false)
 							{
 								colorTemp += q.computeDiffuseColor(normalAtHit, hitPointToLight, lightColor, pointToLightDist, spotLightComp);
 								colorTemp += q.computeSpecularColor(normalAtHit, hitPointToLight, lightColor, camToHitPoint, spotLightComp);
 								colorTemp += q.computeBorderColor(normalAtHit, camToHitPoint, spotLightComp);
-								//colorTemp = q.computeTextureColor(hitPoint, normalAtHit);
 							}
-						}
 #else
-						// sub surface scattering
-						for (unsigned int lightIndex = 0; lightIndex < lights.size(); lightIndex++)
-						{
-							lightPos = lights[lightIndex].pos;
-							lightColor = lights[lightIndex].color;
-							spotLightDir = lights[lightIndex].dir;
-							hitPointToLight = lightPos - hitPoint;
-							pointToLightDist = hitPointToLight.Length();
-							hitPointToLight.Normalize();
-							camToHitPoint = camToPix;
-							normalAtHit = q.normalAtHitPoint(hitPoint);
-
-							spotLightComp = (spotLightDir.x == 0 && spotLightDir.y == 0 && spotLightDir.z == 0) ? 1.0 :
-								clamp(spotLightDir.Dot(-hitPointToLight), 0.5, 0.51);
-
 							d = 0.1;
 							r = 0;
 							subSurfacePoint = hitPoint - (d)*normalAtHit;
 							subTolight = lightPos - subSurfacePoint;
 							subToLightDist = subTolight.Length();
 							subTolight.Normalize();
-							if (subTolight.Dot(normalAtHit) < d)
-								isInShadow = true;
-							else
-								isInShadow = false;
-
-							colorTemp += q.computeAmbientColor();
+							isInShadow = subTolight.Dot(normalAtHit) < d ? true : false;
+							
 							//if (isInShadow == false)
+							//{
+							for (unsigned int qi = 0; qi < quadrics.size(); qi++)
 							{
-								for (unsigned int qi = 0; qi < quadrics.size(); qi++)
-								{
-									r += quadrics[qi].intersect_length(subSurfacePoint, subTolight, subToLightDist);
-								}
-
-								colorTemp += q.computeDiffuseColor(normalAtHit, hitPointToLight, lightColor, pointToLightDist, spotLightComp, d / r);
-								colorTemp += q.computeSpecularColor(normalAtHit, hitPointToLight, lightColor, camToHitPoint, spotLightComp);
-								colorTemp += q.computeBorderColor(normalAtHit, camToHitPoint, spotLightComp);
+								r += quadrics[qi].intersect_length(subSurfacePoint, subTolight, subToLightDist);
 							}
-						}
+
+							colorTemp += q.computeDiffuseColor(normalAtHit, hitPointToLight, lightColor, pointToLightDist, spotLightComp, d / r);
+							colorTemp += q.computeSpecularColor(normalAtHit, hitPointToLight, lightColor, camToHitPoint, spotLightComp);
+							colorTemp += q.computeBorderColor(normalAtHit, camToHitPoint, spotLightComp);
+							//}
 #endif
+						}
 #endif
 						color += colorTemp * weighted;
 					}
@@ -199,7 +181,7 @@ void renderScene()
 
 	glDrawPixels(Xmax, Ymax, GL_RGB, GL_FLOAT, frameBuffer);
 	glFlush();
-	cout << "Rendering...100%.\nDone.\n\n";
+	cout << "\nRendering Complete\n\n";
 
 	//Image :: writeImage("image_file.jpg", frameBuffer);
 }

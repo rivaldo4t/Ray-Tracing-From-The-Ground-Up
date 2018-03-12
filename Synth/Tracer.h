@@ -10,7 +10,8 @@
 #include "Camera.h"
 using namespace std;
 
-Image I1("tex.jpg");
+//Image I1("tex.jpg");
+Image I1("pluto.jpg");
 Image I2("tex2.png");
 Image I3("tex7.jpg");
 Image I4("tex9.jpg");
