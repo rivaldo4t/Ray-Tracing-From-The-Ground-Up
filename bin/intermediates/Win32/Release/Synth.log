@@ -1,7 +1,8 @@
 ﻿  Tracer.cpp
+c:\users\tushar\source\repos\synth5\synth\Tracer.h(177): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
   Generating code
-  4 of 632 functions ( 0.6%) were compiled, the rest were copied from previous compilation.
-    1 functions were new in current compilation
-    12 functions had inline decision re-evaluated but remain unchanged
+  1 of 649 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    1 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   Synth.vcxproj -> C:\Users\TUSHAR\source\repos\Synth5\bin\Win32\Release\Synth.exe

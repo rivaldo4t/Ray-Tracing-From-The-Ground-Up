@@ -10,11 +10,11 @@
 #include "Camera.h"
 using namespace std;
 
-//Image I1("tex.jpg");
-Image I1("pluto.jpg");
-Image I2("tex2.png");
+Image I1("tex.jpg");
+Image I2("tex13.jpg");
 Image I3("tex7.jpg");
 Image I4("tex9.jpg");
+Image I5("tex10.jpg");
 
 double rotX = 0.0, rotY = 0.0;
 const int Xmax = 600, Ymax = 600;
@@ -76,8 +76,8 @@ inline bool shadowRay(int& objIndex, cyPoint3d& hitPoint, cyPoint3d& hitPointToL
 {
 	for (unsigned int i = 0; i < quadrics.size(); i++)
 	{
-		if (i == objIndex)
-			continue;
+		/*if (i == objIndex)
+			continue;*/
 		double hitParamTemp = quadrics[i].intersect(hitPoint, hitPointToLight);
 		if (hitParamTemp < pointToLightDist)
 			return true;
@@ -140,5 +140,43 @@ inline cyPoint3d computeColorFromAreaLight(cyPoint3d& hitPoint, cyPoint3d& camTo
 		}
 	}
 
+	return color;
+}
+
+inline cyPoint3d computeSolidTexture(cyPoint3d& hitPoint, Camera proj, int& objIndex, vector<Quadric>& quadrics, Image& I, int type)
+{
+	cyPoint3d nth = type == 0 ? -proj.n2 : proj.pos - hitPoint;
+	double nthlength = type == 0 ? INT_MAX : nth.Length();
+	nth.Normalize();
+	cyPoint3d ph1;
+	double dist, distTemp;
+	double x1, y1;
+	cyPoint3d color(0,0,0);
+	if (shadowRay(objIndex, hitPoint, nth, nthlength, quadrics) == false)
+	{
+		dist = (proj.viewPortBottomLeft - hitPoint).Dot(proj.n2);
+		distTemp = nth.Dot(proj.n2);
+		if (distTemp != 0 && dist / distTemp > 0)
+		{
+			dist /= distTemp;
+			ph1 = hitPoint + dist*nth;
+			x1 = (ph1 - proj.viewPortBottomLeft).Dot(proj.n0) / proj.scaleX;
+			y1 = (ph1 - proj.viewPortBottomLeft).Dot(proj.n1) / proj.scaleY;
+			if (x1 > 0 && x1 < 1 && y1 > 0 && y1 < 1)
+			{
+				x1 -= floor(x1);
+				y1 -= floor(y1);
+				/*if (x1 < 0)
+					x1 = 1 - x1;
+				if (y1 < 0)
+					y1 = 1 - y1;*/
+				x1 *= I.width;
+				y1 *= I.height;
+				x1 = (int)x1 % I.width;
+				y1 = (int)y1 % I.height;
+				color = I.texture[y1][x1];
+			}
+		}
+	}
 	return color;
 }

@@ -32,7 +32,7 @@ public:
 	cyPoint3d n1;
 	double scaleX = 10, scaleY = 10;
 	int pxmax = 8, pymax = 8;
-	int pxsub = 1, pysub = 1;
+	int pxsub = 2, pysub = 2;
 
 	AreaLight(cyPoint3d _pos, cyPoint3d _color, cyPoint3d _dir, cyPoint3d _updir) : pos(_pos), color(_color), dir(_dir), updir(_updir) 
 	{

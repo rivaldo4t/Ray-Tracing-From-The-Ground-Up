@@ -7,6 +7,7 @@
 #include "Tracer.h"
 using namespace std; 
 
+#define PROJTEX
 //#define SUBSURFACESSCATTERING
 //#define AREALIGHT
 //#define ANTI_ALIASED
@@ -34,26 +35,30 @@ void renderScene()
 	eye += rotY*view;
 
 	Camera cam = {eye, view, up, 10, 10, 8};
-
+	Image temp;
 	vector<Quadric> quadrics;
 	vector<cyPoint3d> N = { { 0, 0, -1 },{ -1, 0, 0 },{ 0, -1, 0 } };
-	vector<pair<double, cyPoint3d>> colors = { { 0.05, { 1, 1, 1 } }, { 50, _725E9C }, { 3, _725E9C }, { 0.0 ,{ 1, 1, 1 } } };
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 4, -6 }, { 2, 2, 2 }, N, colors, I1));
+	vector<pair<double, cyPoint3d>> colors = { { 0.05, { 1, 1, 1 } }, { 50, _725E9C }, { 1.0, _725E9C }, { 0.0 ,{ 1, 1, 1 } } };
+	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 4, -6 }, { 2, 2, 2 }, N, colors, I1, I3));
 
 	N = { { 1, 0 ,0 },{ 0, 0, 1 },{ 0, 1, 0 } };
 	colors = { { 0.05, { 1, 1, 1 } }, { 50, _72828F }, { 0.0, _72828F }, { 0.0, { 1, 1, 1 } } };
-	quadrics.push_back(Quadric({ 0, 0, 0 }, 1, 0, { 0, -0.5, 0 }, { 0.20, 0.20, 0.20 }, N, colors, I2));
+	//quadrics.push_back(Quadric({ 0, 0, 0 }, 1, 0, { 0, -0.5, 0 }, { 0.20, 0.20, 0.20 }, N, colors, I2, temp));
 
 	N = { {1, 0 ,0}, {0, 1, 0}, { 0, 0, 1 } };
-	quadrics.push_back(Quadric({ 0, 0, 0 }, 1, 0, { 0, 0, -16 }, {2, 2, 2}, N, colors, I2));
+	quadrics.push_back(Quadric({ 0, 0, 0 }, 1, 0, { 0, 0, -16 }, {2, 2, 2}, N, colors, I2, temp));
 
 	N = { { 0, 0, 1 },{ -1, 0, 0 },{ 0, -1, 0 } };
-	Quadric infSphere({ 1, 1, 1 }, 0, -1, { 0, 0, 0 }, { 1, 1, 1 }, N, colors, I4);
+	Quadric infSphere({ 1, 1, 1 }, 0, -1, { 0, 0, 0 }, { 1, 1, 1 }, N, colors, I4, temp);
 
-	vector<Light> lights = {	{ { -8, 8, 0 }, { 0.8, 0.8, 0.8 }, { 0, -1, -1 } }, 
-								{ { 0, 8, 0 }, { 0.7, 0.7, 0.7 } } };
+	vector<Light> lights = {	{ { -8, 8, 0 }, { 0.5, 0.5, 0.5 }, { 0, -1, -1 } }, 
+								{ { 0, 8, 0 }, { 0.5, 0.5, 0.5 } } };
 	AreaLight areaLight({ 0, 10, -2 }, { 1, 1, 1 }, { 0, -1, 0 }, { 0, 0, 1 });
 	vector<AreaLight> areaLights = { areaLight };
+
+	//Camera proj = { { 0, 20, 0 },{ 0, -1, 0 },{ 0, 0, -1 }, 16, 9, 10 };
+	Camera proj = { { 0, 0, 10 },{ 0, 0, -1 },{ 0, 1, 0 }, 16, 9, 10 };
+	cyPoint3d solidColor;
 
 	cout << "Navigate using ARROW KEYS ...\n";
 	for (int space = 0; space < Xmax / 50; space++)
@@ -109,7 +114,7 @@ void renderScene()
 						hitPoint = cam.pos + camToPix * hitParam;
 						camToHitPoint = camToPix;
 						normalAtHit = q.normalAtHitPoint(hitPoint);
-						q.computeTextureColor(hitPoint, normalAtHit);
+						//q.computeTextureColor(hitPoint, normalAtHit);
 
 #ifdef AREALIGHT
 					for(unsigned int a = 0; a < areaLights.size(); a++)
@@ -123,10 +128,11 @@ void renderScene()
 							spotLightDir = lights[lightIndex].dir;
 							hitPointToLight = lightPos - hitPoint;
 							pointToLightDist = hitPointToLight.Length();
+							/*hitPointToLight = { 1, 1, 1 };
+							pointToLightDist = 10;*/
 							hitPointToLight.Normalize();
 
-							spotLightComp = (spotLightDir.x == 0 && spotLightDir.y == 0 && spotLightDir.z == 0) ? 1.0 :
-								clamp(spotLightDir.GetNormalized().Dot(-hitPointToLight), 0.5, 0.51);
+							spotLightComp = spotLightDir.IsZero() ? 1.0 : clamp(spotLightDir.GetNormalized().Dot(-hitPointToLight), 0.5, 0.51);
 							colorTemp += q.computeAmbientColor();
 
 #ifndef SUBSURFACESSCATTERING
@@ -137,6 +143,13 @@ void renderScene()
 								colorTemp += q.computeSpecularColor(normalAtHit, hitPointToLight, lightColor, camToHitPoint, spotLightComp);
 								colorTemp += q.computeBorderColor(normalAtHit, camToHitPoint, spotLightComp);
 							}
+#ifdef PROJTEX
+							// type = 0 - parallel
+							// type = 1 - perspective
+							solidColor = computeSolidTexture(hitPoint, proj, objIndex, quadrics, I5, 0);
+							colorTemp = solidColor.IsZero() ? colorTemp : solidColor;
+							//colorTemp += solidColor;
+#endif
 #else
 							d = 0.1;
 							r = 0;
@@ -183,7 +196,7 @@ void renderScene()
 	glFlush();
 	cout << "\nRendering Complete\n\n";
 
-	//Image :: writeImage("image_file.jpg", frameBuffer);
+	Image :: writeImage("par1.jpg", frameBuffer);
 }
 
 int main(int argc, char** argv)
