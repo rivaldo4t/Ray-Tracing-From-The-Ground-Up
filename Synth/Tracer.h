@@ -14,7 +14,7 @@ Image I1("tex.jpg");
 Image I2("tex13.jpg");
 Image I3("tex7.jpg");
 Image I4("tex9.jpg");
-Image I5("tex10.jpg");
+Image I5("tex6.jpg");
 
 double rotX = 0.0, rotY = 0.0;
 const int Xmax = 600, Ymax = 600;
@@ -143,7 +143,7 @@ inline cyPoint3d computeColorFromAreaLight(cyPoint3d& hitPoint, cyPoint3d& camTo
 	return color;
 }
 
-inline cyPoint3d computeSolidTexture(cyPoint3d& hitPoint, Camera proj, int& objIndex, vector<Quadric>& quadrics, Image& I, int type)
+inline cyPoint3d computeSolidTexture(cyPoint3d& hitPoint, Camera proj, int& objIndex, vector<Quadric>& quadrics, Image& I, int type, int solid)
 {
 	cyPoint3d nth = type == 0 ? -proj.n2 : proj.pos - hitPoint;
 	double nthlength = type == 0 ? INT_MAX : nth.Length();
@@ -152,7 +152,8 @@ inline cyPoint3d computeSolidTexture(cyPoint3d& hitPoint, Camera proj, int& objI
 	double dist, distTemp;
 	double x1, y1;
 	cyPoint3d color(0,0,0);
-	if (shadowRay(objIndex, hitPoint, nth, nthlength, quadrics) == false)
+	bool isInShadow = solid == 0 ? false : shadowRay(objIndex, hitPoint, nth, nthlength, quadrics);
+	if (isInShadow == false)
 	{
 		dist = (proj.viewPortBottomLeft - hitPoint).Dot(proj.n2);
 		distTemp = nth.Dot(proj.n2);

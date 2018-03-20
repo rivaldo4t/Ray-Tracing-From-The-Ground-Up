@@ -23,8 +23,8 @@ void renderScene()
 	double weighted = 1.0 / (subPixX * subPixY);
 
 #if 1
-	cyPoint3d eye(0, 4, 8);
-	cyPoint3d view(0, 0, -1);
+	cyPoint3d eye(10, 4, -6);
+	cyPoint3d view(-1, 0, 0);
 	cyPoint3d up(0, 1, 0);
 #else
 	cyPoint3d eye(0, 10, 0);
@@ -43,10 +43,10 @@ void renderScene()
 
 	N = { { 1, 0 ,0 },{ 0, 0, 1 },{ 0, 1, 0 } };
 	colors = { { 0.05, { 1, 1, 1 } }, { 50, _72828F }, { 0.0, _72828F }, { 0.0, { 1, 1, 1 } } };
-	//quadrics.push_back(Quadric({ 0, 0, 0 }, 1, 0, { 0, -0.5, 0 }, { 0.20, 0.20, 0.20 }, N, colors, I2, temp));
+	quadrics.push_back(Quadric({ 0, 0, 0 }, 1, 0, { 0, -0.5, 0 }, { 0.20, 0.20, 0.20 }, N, colors, I2, temp));
 
 	N = { {1, 0 ,0}, {0, 1, 0}, { 0, 0, 1 } };
-	quadrics.push_back(Quadric({ 0, 0, 0 }, 1, 0, { 0, 0, -16 }, {2, 2, 2}, N, colors, I2, temp));
+	//quadrics.push_back(Quadric({ 0, 0, 0 }, 1, 0, { 0, 0, -16 }, {2, 2, 2}, N, colors, I2, temp));
 
 	N = { { 0, 0, 1 },{ -1, 0, 0 },{ 0, -1, 0 } };
 	Quadric infSphere({ 1, 1, 1 }, 0, -1, { 0, 0, 0 }, { 1, 1, 1 }, N, colors, I4, temp);
@@ -56,8 +56,8 @@ void renderScene()
 	AreaLight areaLight({ 0, 10, -2 }, { 1, 1, 1 }, { 0, -1, 0 }, { 0, 0, 1 });
 	vector<AreaLight> areaLights = { areaLight };
 
-	//Camera proj = { { 0, 20, 0 },{ 0, -1, 0 },{ 0, 0, -1 }, 16, 9, 10 };
-	Camera proj = { { 0, 0, 10 },{ 0, 0, -1 },{ 0, 1, 0 }, 16, 9, 10 };
+	Camera proj = { { 0, 20, -4 },{ 0, -1, 0 },{ 0, 0, -1 }, 9, 9, 10 };
+	//Camera proj = { { 0, 4, 10 },{ 0, 0, -1 },{ 0, 1, 0 }, 9, 9, 10 };
 	cyPoint3d solidColor;
 
 	cout << "Navigate using ARROW KEYS ...\n";
@@ -144,11 +144,12 @@ void renderScene()
 								colorTemp += q.computeBorderColor(normalAtHit, camToHitPoint, spotLightComp);
 							}
 #ifdef PROJTEX
-							// type = 0 - parallel
+							// type(second last parameter) = 0 - parallel
 							// type = 1 - perspective
-							solidColor = computeSolidTexture(hitPoint, proj, objIndex, quadrics, I5, 0);
+							// solid(last parameter) = 0 - solid texturing
+							// solid = 1 - light shading
+							solidColor = computeSolidTexture(hitPoint, proj, objIndex, quadrics, I5, 1, 0);
 							colorTemp = solidColor.IsZero() ? colorTemp : solidColor;
-							//colorTemp += solidColor;
 #endif
 #else
 							d = 0.1;
@@ -196,7 +197,7 @@ void renderScene()
 	glFlush();
 	cout << "\nRendering Complete\n\n";
 
-	Image :: writeImage("par1.jpg", frameBuffer);
+	Image :: writeImage("solidpar.jpg", frameBuffer);
 }
 
 int main(int argc, char** argv)
