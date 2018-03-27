@@ -10,7 +10,7 @@
 #include "Camera.h"
 using namespace std;
 
-Image I1("tex.jpg");
+Image I1("tex17.jpg");
 Image I2("tex13.jpg");
 Image I3("tex7.jpg");
 Image I4("tex9.jpg");
@@ -78,7 +78,7 @@ inline bool shadowRay(int& objIndex, cyPoint3d& hitPoint, cyPoint3d& hitPointToL
 	{
 		/*if (i == objIndex)
 			continue;*/
-		double hitParamTemp = quadrics[i].intersect(hitPoint, hitPointToLight);
+		double hitParamTemp = quadrics[i].intersect2(hitPoint, hitPointToLight);
 		if (hitParamTemp < pointToLightDist)
 			return true;
 	}

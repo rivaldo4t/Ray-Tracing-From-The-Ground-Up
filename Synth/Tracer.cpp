@@ -7,7 +7,7 @@
 #include "Tracer.h"
 using namespace std; 
 
-#define PROJTEX
+//#define PROJTEX
 //#define SUBSURFACESSCATTERING
 //#define AREALIGHT
 //#define ANTI_ALIASED
@@ -18,13 +18,25 @@ int subPixX = 1, subPixY = 1;
 int subPixX = 4, subPixY = 4;
 #endif
 
+Quadric planeFromPoints(cyPoint3d p0, cyPoint3d p1, cyPoint3d p2, cyPoint3d c)
+{
+	cyPoint3d planarVec1 = p1 - p0;
+	cyPoint3d planarVec2 = p2 - p0;
+	cyPoint3d n2 = planarVec1.Cross(planarVec2).GetNormalized();
+	cyPoint3d n0 = planarVec1.GetNormalized();
+	cyPoint3d n1 = n0.Cross(n2).GetNormalized();
+	Image temp;
+	vector<pair<double, cyPoint3d>> colors = { { 0.5, c },{ 0, _72828F },{ 0.0, _72828F },{ 0.0,{ 1, 1, 1 } } };
+	return Quadric({ 0, 0, 0 }, 1, 0, p0, { 1, 1, 1 }, { n0, n1, n2 }, colors, I2, temp, {p0, p1, p2});
+}
+
 void renderScene()
 {
 	double weighted = 1.0 / (subPixX * subPixY);
 
 #if 1
-	cyPoint3d eye(10, 4, -6);
-	cyPoint3d view(-1, 0, 0);
+	cyPoint3d eye(0, 1, 2);
+	cyPoint3d view(0, 0, -1);
 	cyPoint3d up(0, 1, 0);
 #else
 	cyPoint3d eye(0, 10, 0);
@@ -38,27 +50,33 @@ void renderScene()
 	Image temp;
 	vector<Quadric> quadrics;
 	vector<cyPoint3d> N = { { 0, 0, -1 },{ -1, 0, 0 },{ 0, -1, 0 } };
-	vector<pair<double, cyPoint3d>> colors = { { 0.05, { 1, 1, 1 } }, { 50, _725E9C }, { 1.0, _725E9C }, { 0.0 ,{ 1, 1, 1 } } };
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 4, -6 }, { 2, 2, 2 }, N, colors, I1, I3));
+	vector<pair<double, cyPoint3d>> colors = { { 0.05, { 1, 1, 1 } }, { 50, _725E9C }, { 0.0, _725E9C }, { 0.0 ,{ 1, 1, 1 } } };
+	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 2, -6 }, { 2, 2, 2 }, N, colors, I1, I3));
 
 	N = { { 1, 0 ,0 },{ 0, 0, 1 },{ 0, 1, 0 } };
 	colors = { { 0.05, { 1, 1, 1 } }, { 50, _72828F }, { 0.0, _72828F }, { 0.0, { 1, 1, 1 } } };
-	quadrics.push_back(Quadric({ 0, 0, 0 }, 1, 0, { 0, -0.5, 0 }, { 0.20, 0.20, 0.20 }, N, colors, I2, temp));
+	//quadrics.push_back(Quadric({ 0, 0, 0 }, 1, 0, { 0, -0.1, 0 }, { 0.20, 0.20, 0.20 }, N, colors, I2, temp));
 
 	N = { {1, 0 ,0}, {0, 1, 0}, { 0, 0, 1 } };
-	//quadrics.push_back(Quadric({ 0, 0, 0 }, 1, 0, { 0, 0, -16 }, {2, 2, 2}, N, colors, I2, temp));
+	//quadrics.push_back(Quadric({ 0, 0, 0 }, 1, 0, { 0, 0, -10 }, {2, 2, 2}, N, colors, I2, temp));
 
 	N = { { 0, 0, 1 },{ -1, 0, 0 },{ 0, -1, 0 } };
-	Quadric infSphere({ 1, 1, 1 }, 0, -1, { 0, 0, 0 }, { 1, 1, 1 }, N, colors, I4, temp);
+	//Quadric infSphere({ 1, 1, 1 }, 0, -1, { 0, 0, 0 }, { 1, 1, 1 }, N, colors, I4, temp);
 
 	vector<Light> lights = {	{ { -8, 8, 0 }, { 0.5, 0.5, 0.5 }, { 0, -1, -1 } }, 
 								{ { 0, 8, 0 }, { 0.5, 0.5, 0.5 } } };
+	
 	AreaLight areaLight({ 0, 10, -2 }, { 1, 1, 1 }, { 0, -1, 0 }, { 0, 0, 1 });
 	vector<AreaLight> areaLights = { areaLight };
 
 	Camera proj = { { 0, 20, -4 },{ 0, -1, 0 },{ 0, 0, -1 }, 9, 9, 10 };
 	//Camera proj = { { 0, 4, 10 },{ 0, 0, -1 },{ 0, 1, 0 }, 9, 9, 10 };
 	cyPoint3d solidColor;
+
+	quadrics.push_back(planeFromPoints({ 0, 4, -10 }, { 0, 0, -10 }, { 0, 0, -6 }, _DC304B));
+	quadrics.push_back(planeFromPoints({ 0, 0, -10 }, { 0, 4, -10 }, { 4, 0, -10 }, _1F2D3D));
+	quadrics.push_back(planeFromPoints({ 0, 0, -6 }, { 4, 0, -10 }, { 0, 4, -10 }, _CA4679));
+	quadrics.push_back(planeFromPoints({ 4, 0, -10 }, { 0, 0, -6 }, { 0, 0, -10 }, _F4EAC8));
 
 	cout << "Navigate using ARROW KEYS ...\n";
 	for (int space = 0; space < Xmax / 50; space++)
@@ -95,7 +113,7 @@ void renderScene()
 
 					for (unsigned int index = 0; index < quadrics.size(); index++)
 					{
-						hitParamTemp = quadrics[index].intersect(cam.pos, camToPix);
+						hitParamTemp = quadrics[index].intersect2(cam.pos, camToPix);
 						if (hitParamTemp < hitParam)
 						{
 							hitParam = hitParamTemp;
@@ -105,7 +123,7 @@ void renderScene()
 
 					if (objIndex == -1)
 					{
-						color = infSphere.computeTextureColor(hitPoint, camToPix);
+						//color = infSphere.computeTextureColor(hitPoint, camToPix);
 					}
 					else
 					{
@@ -148,7 +166,7 @@ void renderScene()
 							// type = 1 - perspective
 							// solid(last parameter) = 0 - solid texturing
 							// solid = 1 - light shading
-							solidColor = computeSolidTexture(hitPoint, proj, objIndex, quadrics, I5, 1, 0);
+							solidColor = computeSolidTexture(hitPoint, proj, objIndex, quadrics, I5, 0, 0);
 							colorTemp = solidColor.IsZero() ? colorTemp : solidColor;
 #endif
 #else
@@ -197,7 +215,7 @@ void renderScene()
 	glFlush();
 	cout << "\nRendering Complete\n\n";
 
-	Image :: writeImage("solidpar.jpg", frameBuffer);
+	//Image :: writeImage("texmap.jpg", frameBuffer);
 }
 
 int main(int argc, char** argv)
