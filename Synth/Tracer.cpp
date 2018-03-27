@@ -16,6 +16,8 @@ using namespace std;
 //#define OBJFILE "box_stack.obj"
 //#define OBJFILE "earth.obj" // unexpected behaiviour with this file; Try re-running if does not load the first time; Works; checked.
 #define OBJFILE "cube.obj"
+//#define OBJFILE "tetra.obj" // or for hand-picked vertices enable the line below
+//#define TETRA
 
 #ifndef ANTI_ALIASED
 int subPixX = 1, subPixY = 1;
@@ -89,17 +91,19 @@ void renderScene()
 	Camera proj = { { 0, 20, -4 },{ 0, -1, 0 },{ 0, 0, -1 }, 9, 9, 10 };
 	//Camera proj = { { 0, 4, 10 },{ 0, 0, -1 },{ 0, 1, 0 }, 9, 9, 10 };
 	cyPoint3d solidColor;
-
+#ifdef TETRA
 	//tetrahedron
 	/*quadrics.push_back(planeFromPoints({ 0, 6, -8 }, { 0, 2, -8 }, { 0, 2, -4 }, palette[(9)%palette.size()], {0, 0}, { 0, 0 }, { 0, 0 }, I6));
 	quadrics.push_back(planeFromPoints({ 0, 2, -8 }, { 0, 6, -8 }, { 4, 2, -8 }, palette[(9)%palette.size()], { 0, 0 }, { 0, 0 }, { 0, 0 }, I6));
 	quadrics.push_back(planeFromPoints({ 0, 2, -4 }, { 4, 2, -8 }, { 0, 6, -8 }, palette[(9)%palette.size()], { 0, 0 }, { 0, 0 }, { 0, 0 }, I6));
 	quadrics.push_back(planeFromPoints({ 4, 2, -8 }, { 0, 2, -4 }, { 0, 2, -8 }, palette[(9)%palette.size()], { 0, 0 }, { 0, 0 }, { 0, 0 }, I6));*/
+#endif
 
-	//
+	//Large plane for floors
 	quadrics.push_back(planeFromPoints({ -50, -0.45, 50 }, { -50, -0.45, -50 }, { 50, -0.45, -50 }, palette[(2) % palette.size()], { 0, 0 }, {1, 0}, {0, 1}, I7));
 	quadrics.push_back(planeFromPoints({ -50, -0.45, 50 }, { 50, -0.45, -50 }, { 50, -0.45, 50 }, palette[(2) % palette.size()], { 0, 0 }, { 0, 1 }, { 1, 1 }, I7));
 
+#ifdef OBJFILE
 	objl::Loader Loader;
 	bool loadout = Loader.LoadFile(OBJFILE);
 	if (loadout)
@@ -133,7 +137,7 @@ void renderScene()
 			//cout << "\n";
 		}
 	}
-	//
+#endif
 
 	cout << "Navigate using ARROW KEYS ...\n";
 	for (int space = 0; space < Xmax / 50; space++)
@@ -272,6 +276,7 @@ void renderScene()
 	glFlush();
 	cout << "\nRendering Complete\n\n";
 
+	//enable to write to JPG
 	//Image :: writeImage("texturedBoxes.jpg", frameBuffer);
 }
 
