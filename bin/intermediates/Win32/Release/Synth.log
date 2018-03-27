@@ -1,7 +1,13 @@
 ﻿  Tracer.cpp
-c:\users\tushar\source\repos\synth6\synth\Tracer.h(178): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
+c:\users\tushar\source\repos\synth6\synth\Tracer.h(180): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
+c:\users\tushar\source\repos\synth6\synth\OBJ_Loader.h(618): warning C4018: '<': signed/unsigned mismatch
+c:\users\tushar\source\repos\synth6\synth\OBJ_Loader.h(655): warning C4018: '<': signed/unsigned mismatch
+c:\users\tushar\source\repos\synth6\synth\OBJ_Loader.h(661): warning C4018: '<': signed/unsigned mismatch
+c:\users\tushar\source\repos\synth6\synth\OBJ_Loader.h(915): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+Tracer.cpp(107): warning C4018: '<': signed/unsigned mismatch
+Tracer.cpp(122): warning C4018: '<': signed/unsigned mismatch
   Generating code
-  1 of 638 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
+  1 of 1451 functions ( 0.1%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
     1 functions had inline decision re-evaluated but remain unchanged
   Finished generating code

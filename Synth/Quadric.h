@@ -21,6 +21,8 @@ public:
 	Image& textureImage;
 	Image& normalImage;
 	vector<cyPoint3d> points;
+	vector<cyPoint2d> texpoints;
+	double s, t;
 	//Quadric() {}
 
 	Quadric(cyPoint3d _ai2,
@@ -31,13 +33,14 @@ public:
 		vector<cyPoint3d> _N,
 		vector<pair<double, cyPoint3d>> _colors, 
 		Image& _I, Image& _I2,
-		vector<cyPoint3d> _points) :
+		vector<cyPoint3d> _points,
+		vector<cyPoint2d> _texpoints) :
 		ai2(_ai2), a21(_a21), a00(_a00), qc(_qc), si(_si), N(_N),
 		ambientFact(_colors[0].first), ambientColor(_colors[0].second),
 		diffuseFact(_colors[1].first), diffuseColor(_colors[1].second),
 		specularFact(_colors[2].first), specularColor(_colors[2].second),
 		borderFact(_colors[3].first), borderColor(_colors[3].second),
-		textureImage(_I), normalImage(_I2), points(_points)
+		textureImage(_I), normalImage(_I2), points(_points), texpoints(_texpoints)
 		{
 			//plane
 			if (ai2.IsZero())
@@ -45,6 +48,8 @@ public:
 			//sphere
 			else
 				type = 1;
+			s = 0.0;
+			t = 0.0;
 		}
 
 	inline double intersect(cyPoint3d eye, cyPoint3d eyeToPix)
@@ -150,9 +155,9 @@ public:
 				maxA1 = absMax(A1);
 				maxA2 = absMax(A2);
 				double w = maxA0 / maxA;
-				double u = maxA1 / maxA;
-				double v = maxA2 / maxA;
-				if (u + v + w > 0.9999 && u + v + w < 1.0001 && u >= 0 && u <= 1 && v >= 0 && v <= 1 && w >= 0 && w <= 1)
+				s = maxA1 / maxA;
+				t = maxA2 / maxA;
+				if (s + t + w > 0.9999 && s + t + w < 1.0001 && s >= 0 && s <= 1 && t >= 0 && t <= 1 && w >= 0 && w <= 1)
 					return hitParam;
 				else 
 					return INT_MAX;
@@ -289,12 +294,14 @@ public:
 			{
 				w = textureImage.width;
 				h = textureImage.height;
-				u = N[0].Dot(hitPoint - qc);
+				/*u = N[0].Dot(hitPoint - qc);
 				v = N[1].Dot(hitPoint - qc);
 				if (u < 0)
 					u = -u;
 				if (v < 0)
-					v = -v;
+					v = -v;*/
+				u = (1 - s - t)*texpoints[0][0] + s*texpoints[1][0] + t*texpoints[2][0];
+				v = (1 - s - t)*texpoints[0][1] + s*texpoints[1][1] + t*texpoints[2][1];
 				u = u * w;
 				v = v * h;
 				pixelX = (int)(u);

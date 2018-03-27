@@ -1,3 +1,9 @@
 ﻿  Tracer.cpp
 c:\users\tushar\source\repos\synth6\synth\tracer.h(178): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
+c:\users\tushar\source\repos\synth6\synth\obj_loader.h(618): warning C4018: '<': signed/unsigned mismatch
+c:\users\tushar\source\repos\synth6\synth\obj_loader.h(655): warning C4018: '<': signed/unsigned mismatch
+c:\users\tushar\source\repos\synth6\synth\obj_loader.h(661): warning C4018: '<': signed/unsigned mismatch
+c:\users\tushar\source\repos\synth6\synth\obj_loader.h(915): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\tushar\source\repos\synth6\synth\tracer.cpp(86): warning C4018: '<': signed/unsigned mismatch
+c:\users\tushar\source\repos\synth6\synth\tracer.cpp(103): warning C4018: '<': signed/unsigned mismatch
   Synth.vcxproj -> C:\Users\TUSHAR\source\repos\Synth6\bin\Win32\Debug\Synth.exe

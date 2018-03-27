@@ -10,11 +10,13 @@
 #include "Camera.h"
 using namespace std;
 
-Image I1("tex17.jpg");
-Image I2("tex13.jpg");
-Image I3("tex7.jpg");
-Image I4("tex9.jpg");
-Image I5("tex6.jpg");
+//Image I1("tex17.jpg");
+//Image I2("tex13.jpg");
+//Image I3("tex7.jpg");
+//Image I4("tex9.jpg");
+//Image I5("tex6.jpg");
+Image I6("tex5.jpg");
+Image I7("tex14.jpg");
 
 double rotX = 0.0, rotY = 0.0;
 const int Xmax = 600, Ymax = 600;

@@ -5,6 +5,7 @@
 #include <math.h>
 #include <algorithm>
 #include "Tracer.h"
+#include "OBJ_Loader.h"
 using namespace std; 
 
 //#define PROJTEX
@@ -12,13 +13,17 @@ using namespace std;
 //#define AREALIGHT
 //#define ANTI_ALIASED
 
+//#define OBJFILE "box_stack.obj"
+//#define OBJFILE "earth.obj" // unexpected behaiviour with this file; Try re-running if does not load the first time; Works; checked.
+#define OBJFILE "cube.obj"
+
 #ifndef ANTI_ALIASED
 int subPixX = 1, subPixY = 1;
 #else
 int subPixX = 4, subPixY = 4;
 #endif
 
-Quadric planeFromPoints(cyPoint3d p0, cyPoint3d p1, cyPoint3d p2, cyPoint3d c)
+Quadric planeFromPoints(cyPoint3d p0, cyPoint3d p1, cyPoint3d p2, cyPoint3d c, cyPoint2d t1, cyPoint2d t2, cyPoint2d t3, Image& I)
 {
 	cyPoint3d planarVec1 = p1 - p0;
 	cyPoint3d planarVec2 = p2 - p0;
@@ -26,8 +31,8 @@ Quadric planeFromPoints(cyPoint3d p0, cyPoint3d p1, cyPoint3d p2, cyPoint3d c)
 	cyPoint3d n0 = planarVec1.GetNormalized();
 	cyPoint3d n1 = n0.Cross(n2).GetNormalized();
 	Image temp;
-	vector<pair<double, cyPoint3d>> colors = { { 0.5, c },{ 0, _72828F },{ 0.0, _72828F },{ 0.0,{ 1, 1, 1 } } };
-	return Quadric({ 0, 0, 0 }, 1, 0, p0, { 1, 1, 1 }, { n0, n1, n2 }, colors, I2, temp, {p0, p1, p2});
+	vector<pair<double, cyPoint3d>> colors = { { 0.01, c },{ 50, c },{ 0.0, c },{ 0.0,{ 1, 1, 1 } } };
+	return Quadric({ 0, 0, 0 }, 1, 0, p0, { 1, 1, 1 }, { n0, n1, n2 }, colors, I, temp, { p0, p1, p2 }, {t1, t2, t3});
 }
 
 void renderScene()
@@ -35,11 +40,14 @@ void renderScene()
 	double weighted = 1.0 / (subPixX * subPixY);
 
 #if 1
-	cyPoint3d eye(0, 1, 2);
+	/*cyPoint3d eye(0, 0, 6);
 	cyPoint3d view(0, 0, -1);
+	cyPoint3d up(0, 1, 0);*/
+	cyPoint3d eye(3, 1, 3);
+	cyPoint3d view(-1, 0, -1);
 	cyPoint3d up(0, 1, 0);
 #else
-	cyPoint3d eye(0, 10, 0);
+	cyPoint3d eye(0, 4, 4);
 	cyPoint3d view(0, -1, -1);
 	cyPoint3d up(0, 1, -1);
 #endif
@@ -63,8 +71,17 @@ void renderScene()
 	N = { { 0, 0, 1 },{ -1, 0, 0 },{ 0, -1, 0 } };
 	//Quadric infSphere({ 1, 1, 1 }, 0, -1, { 0, 0, 0 }, { 1, 1, 1 }, N, colors, I4, temp);
 
-	vector<Light> lights = {	{ { -8, 8, 0 }, { 0.5, 0.5, 0.5 }, { 0, -1, -1 } }, 
-								{ { 0, 8, 0 }, { 0.5, 0.5, 0.5 } } };
+	vector<Light> lights = {	{{ -8, 8, -8 }, { 0.8, 0.8, 0.8 }}, 
+								{{  8, 8, -8 }, { 0.8, 0.8, 0.8 }},
+								{ { 0, 8, -8 },{ 0.8, 0.8, 0.8 } },
+								{ { 0, -8, 0 },{ 0.8, 0.8, 0.8 } },
+								{{  0, 8,  0 }, { 0.8, 0.8, 0.8 }} ,
+								{ { -8, 8,  0 },{ 0.8, 0.8, 0.8 } } ,
+								{ { 8, 8,  0 },{ 0.8, 0.8, 0.8 } } ,
+								{ { -8, -8, -8 },{ 0.8, 0.8, 0.8 } },
+								{ { 0, 0,  8 },{ 0.5, 0.5, 0.5 } } ,
+								{ { -8, 0,  0 },{ 0.5, 0.5, 0.5 } } ,
+	};
 	
 	AreaLight areaLight({ 0, 10, -2 }, { 1, 1, 1 }, { 0, -1, 0 }, { 0, 0, 1 });
 	vector<AreaLight> areaLights = { areaLight };
@@ -73,10 +90,50 @@ void renderScene()
 	//Camera proj = { { 0, 4, 10 },{ 0, 0, -1 },{ 0, 1, 0 }, 9, 9, 10 };
 	cyPoint3d solidColor;
 
-	quadrics.push_back(planeFromPoints({ 0, 4, -10 }, { 0, 0, -10 }, { 0, 0, -6 }, _DC304B));
-	quadrics.push_back(planeFromPoints({ 0, 0, -10 }, { 0, 4, -10 }, { 4, 0, -10 }, _1F2D3D));
-	quadrics.push_back(planeFromPoints({ 0, 0, -6 }, { 4, 0, -10 }, { 0, 4, -10 }, _CA4679));
-	quadrics.push_back(planeFromPoints({ 4, 0, -10 }, { 0, 0, -6 }, { 0, 0, -10 }, _F4EAC8));
+	//tetrahedron
+	/*quadrics.push_back(planeFromPoints({ 0, 6, -8 }, { 0, 2, -8 }, { 0, 2, -4 }, palette[(9)%palette.size()], {0, 0}, { 0, 0 }, { 0, 0 }, I6));
+	quadrics.push_back(planeFromPoints({ 0, 2, -8 }, { 0, 6, -8 }, { 4, 2, -8 }, palette[(9)%palette.size()], { 0, 0 }, { 0, 0 }, { 0, 0 }, I6));
+	quadrics.push_back(planeFromPoints({ 0, 2, -4 }, { 4, 2, -8 }, { 0, 6, -8 }, palette[(9)%palette.size()], { 0, 0 }, { 0, 0 }, { 0, 0 }, I6));
+	quadrics.push_back(planeFromPoints({ 4, 2, -8 }, { 0, 2, -4 }, { 0, 2, -8 }, palette[(9)%palette.size()], { 0, 0 }, { 0, 0 }, { 0, 0 }, I6));*/
+
+	//
+	quadrics.push_back(planeFromPoints({ -50, -0.45, 50 }, { -50, -0.45, -50 }, { 50, -0.45, -50 }, palette[(2) % palette.size()], { 0, 0 }, {1, 0}, {0, 1}, I7));
+	quadrics.push_back(planeFromPoints({ -50, -0.45, 50 }, { 50, -0.45, -50 }, { 50, -0.45, 50 }, palette[(2) % palette.size()], { 0, 0 }, { 0, 1 }, { 1, 1 }, I7));
+
+	objl::Loader Loader;
+	bool loadout = Loader.LoadFile(OBJFILE);
+	if (loadout)
+	{
+		for (int i = 0; i < Loader.LoadedMeshes.size(); i++)
+		{
+			objl::Mesh curMesh = Loader.LoadedMeshes[i];
+
+			/*cout << "Mesh " << i << ": " << curMesh.MeshName << "\n";
+			cout << "Vertices:\n";
+
+			for (int j = 0; j < curMesh.Vertices.size(); j++)
+			{
+				cout << "V" << j << ": " <<
+					"P(" << curMesh.Vertices[j].Position.X << ", " << curMesh.Vertices[j].Position.Y << ", " << curMesh.Vertices[j].Position.Z << ") " <<
+					"N(" << curMesh.Vertices[j].Normal.X << ", " << curMesh.Vertices[j].Normal.Y << ", " << curMesh.Vertices[j].Normal.Z << ") " <<
+					"TC(" << curMesh.Vertices[j].TextureCoordinate.X << ", " << curMesh.Vertices[j].TextureCoordinate.Y << ")\n";
+			}
+			cout << "Indices:\n";*/
+			for (int j = 0; j < curMesh.Indices.size(); j += 3)
+			{
+				//cout << "T" << j / 3 << ": " << curMesh.Indices[j] << ", " << curMesh.Indices[j + 1] << ", " << curMesh.Indices[j + 2] << "\n";
+				cyPoint3d q1 = { curMesh.Vertices[curMesh.Indices[j]].Position.X, curMesh.Vertices[curMesh.Indices[j]].Position.Y, curMesh.Vertices[curMesh.Indices[j]].Position.Z };
+				cyPoint3d q2 = { curMesh.Vertices[curMesh.Indices[j + 1]].Position.X, curMesh.Vertices[curMesh.Indices[j + 1]].Position.Y, curMesh.Vertices[curMesh.Indices[j + 1]].Position.Z };
+				cyPoint3d q3 = { curMesh.Vertices[curMesh.Indices[j + 2]].Position.X, curMesh.Vertices[curMesh.Indices[j + 2]].Position.Y, curMesh.Vertices[curMesh.Indices[j + 2]].Position.Z };
+				cyPoint2d t1 = { curMesh.Vertices[curMesh.Indices[j]].TextureCoordinate.X, curMesh.Vertices[curMesh.Indices[j]].TextureCoordinate.Y };
+				cyPoint2d t2 = { curMesh.Vertices[curMesh.Indices[j + 1]].TextureCoordinate.X, curMesh.Vertices[curMesh.Indices[j + 1]].TextureCoordinate.Y };
+				cyPoint2d t3 = { curMesh.Vertices[curMesh.Indices[j + 2]].TextureCoordinate.X, curMesh.Vertices[curMesh.Indices[j + 2]].TextureCoordinate.Y };
+				quadrics.push_back(planeFromPoints(q1, q2, q3, palette[(9)%palette.size()], t1, t2, t3, I6));
+			}
+			//cout << "\n";
+		}
+	}
+	//
 
 	cout << "Navigate using ARROW KEYS ...\n";
 	for (int space = 0; space < Xmax / 50; space++)
@@ -132,7 +189,7 @@ void renderScene()
 						hitPoint = cam.pos + camToPix * hitParam;
 						camToHitPoint = camToPix;
 						normalAtHit = q.normalAtHitPoint(hitPoint);
-						//q.computeTextureColor(hitPoint, normalAtHit);
+						q.computeTextureColor(hitPoint, normalAtHit);
 
 #ifdef AREALIGHT
 					for(unsigned int a = 0; a < areaLights.size(); a++)
@@ -215,7 +272,7 @@ void renderScene()
 	glFlush();
 	cout << "\nRendering Complete\n\n";
 
-	//Image :: writeImage("texmap.jpg", frameBuffer);
+	//Image :: writeImage("texturedBoxes.jpg", frameBuffer);
 }
 
 int main(int argc, char** argv)
