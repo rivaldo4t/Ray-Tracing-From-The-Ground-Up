@@ -22,6 +22,7 @@ public:
 	Image& normalImage;
 	vector<cyPoint3d> points;
 	vector<cyPoint2d> texpoints;
+	double reflectivity;
 	double s, t;
 	//Quadric() {}
 
@@ -33,14 +34,16 @@ public:
 		vector<cyPoint3d> _N,
 		vector<pair<double, cyPoint3d>> _colors, 
 		Image& _I, Image& _I2,
-		vector<cyPoint3d> _points,
-		vector<cyPoint2d> _texpoints) :
+		vector<cyPoint3d> _points = {},
+		vector<cyPoint2d> _texpoints = {}, 
+		double _ref = 0.0) :
 		ai2(_ai2), a21(_a21), a00(_a00), qc(_qc), si(_si), N(_N),
 		ambientFact(_colors[0].first), ambientColor(_colors[0].second),
 		diffuseFact(_colors[1].first), diffuseColor(_colors[1].second),
 		specularFact(_colors[2].first), specularColor(_colors[2].second),
 		borderFact(_colors[3].first), borderColor(_colors[3].second),
-		textureImage(_I), normalImage(_I2), points(_points), texpoints(_texpoints)
+		textureImage(_I), normalImage(_I2), points(_points), texpoints(_texpoints),
+		reflectivity(_ref)
 		{
 			//plane
 			if (ai2.IsZero())
@@ -256,7 +259,7 @@ public:
 		cyPoint3d color = { 0, 0, 0 };
 		double diffuseComp = t == 0.0 ? clamp(normalAtHit.Dot(hitPointToLight), 0, 0.5) : clamp(t, 0, 1);
 		diffuseComp *= spotLightComp;
-		color = diffuseComp * diffuseColor * diffuseFact * lightColor / (pow(pointToLightDist, 2));
+		color = diffuseComp * diffuseColor * (diffuseFact * 100) * lightColor / (pow(pointToLightDist, 2));
 		return color;
 	}
 
