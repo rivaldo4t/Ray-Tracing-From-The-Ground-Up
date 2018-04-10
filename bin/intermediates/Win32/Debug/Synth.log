@@ -1,2 +1,5 @@
 ﻿  Tracer.cpp
-  Synth.vcxproj -> C:\Users\TUSHAR\source\repos\Synth7 - recur\bin\Win32\Debug\Synth.exe
+c:\users\tushar\source\repos\synth8\synth\tracer.h(188): warning C4101: 'subToLightDist': unreferenced local variable
+c:\users\tushar\source\repos\synth8\synth\tracer.h(190): warning C4101: 'r': unreferenced local variable
+c:\users\tushar\source\repos\synth8\synth\tracer.h(190): warning C4101: 'd': unreferenced local variable
+  Synth.vcxproj -> C:\Users\TUSHAR\source\repos\Synth8\bin\Win32\Debug\Synth.exe

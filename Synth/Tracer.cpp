@@ -8,63 +8,61 @@
 #include "OBJ_Loader.h"
 using namespace std;
 
-//#define PROJTEX
-//#define SUBSURFACESSCATTERING
-//#define AREALIGHT
 //#define ANTI_ALIASED
-//#define OUTPUT_JPG "thumb.jpg"
-#define OBJFILE "cube.obj"
+//#define OUTPUT_JPG "output/out.jpg"
+//#define OBJFILE "objects/cube.obj"
 
 void renderScene()
 {
+	cyPoint3d color, pix, camToPix;
+	double X, Y, x, y, rx, ry;
+	int subPixX, subPixY;
 #if 1
-	/*cyPoint3d eye(0, 0, 6);
+	cyPoint3d eye(0, 0, 6);
 	cyPoint3d view(0, 0, -1);
-	cyPoint3d up(0, 1, 0);*/
-	cyPoint3d eye(4, 1, 4);
-	cyPoint3d view(-1, 0, -1);
 	cyPoint3d up(0, 1, 0);
 #else
-	cyPoint3d eye(0, 4, 4);
+	cyPoint3d eye(-3, 1.5, 4);
+	cyPoint3d view(1, 0, -1);
+	cyPoint3d up(0, 1, 0);
+	/*cyPoint3d eye(0, 4, 4);
 	cyPoint3d view(0, -1, -1);
-	cyPoint3d up(0, 1, -1);
+	cyPoint3d up(0, 1, -1);*/
 #endif
-	rotX -= 15;
 	rotVec(view, up, rotX);
 	eye += rotY*view;
 
 	Camera cam = {eye, view, up, 10, 10, 8};
-	Image temp;
 
-	vector<Light> lights = {	{{ -8,  8, -8 }, { 0.5, 0.5, 0.5 }}, 
-								{{  8,  8, -8 }, { 0.5, 0.5, 0.5 }},
-								{{  0,  8, -8 }, { 0.5, 0.5, 0.5 }},
-								{{  0, -8,  0 }, { 0.5, 0.5, 0.5 }},
-								{{  0,  8,  0 }, { 0.5, 0.5, 0.5 }},
-								{{ -8,  8,  0 }, { 0.5, 0.5, 0.5 }},
-								{{  8,  8,  0 }, { 0.5, 0.5, 0.5 }},
-								{{ -8, -8, -8 }, { 0.5, 0.5, 0.5 }},
-								{{  0,  0,  8 }, { 0.5, 0.5, 0.5 }},
-								{{ -8,  0,  0 }, { 0.5, 0.5, 0.5 }},
+	vector<Light> lights = {	{{ -10,  10, -10 }, { 0.5, 0.5, 0.5 }}, 
+								{{  10,  10, -10 }, { 0.5, 0.5, 0.5 }},
+								{{  0,  10, -10 }, { 0.5, 0.5, 0.5 }},
+								{{  0, -10,  0 }, { 0.5, 0.5, 0.5 }},
+								{{  0,  10,  0 }, { 0.5, 0.5, 0.5 }},
+								{{ -10,  10,  0 }, { 0.5, 0.5, 0.5 }},
+								{{ 10,  10,  0 }, { 0.5, 0.5, 0.5 }},
+								{{ -10, -10, -10 }, { 0.5, 0.5, 0.5 }},
+								{{  0,  0,  10 }, { 0.5, 0.5, 0.5 }},
+								{{ -10,  0,  0 }, { 0.5, 0.5, 0.5 }},
 	};
 	
 	AreaLight areaLight({ 0, 10, -2 }, { 1, 1, 1 }, { 0, -1, 0 }, { 0, 0, 1 });
 	vector<AreaLight> areaLights = { areaLight };
 
-	Camera proj = { { 0, 20, -4 },{ 0, -1, 0 },{ 0, 0, -1 }, 9, 9, 10 };
 	//Camera proj = { { 0, 4, 10 },{ 0, 0, -1 },{ 0, 1, 0 }, 9, 9, 10 };
+	Camera proj = { { 0, 20, -4 },{ 0, -1, 0 },{ 0, 0, -1 }, 9, 9, 10 };
 	cyPoint3d solidColor;
 
 	vector<Quadric> quadrics;
 	vector<cyPoint3d> N = { { 0, 0, -1 },{ -1, 0, 0 },{ 0, -1, 0 } };
 	vector<pair<double, cyPoint3d>> colors = { { 0.05, { 1, 1, 1 } }, { 0.5, _725E9C }, { 0.0, _725E9C }, { 0.0 ,{ 1, 1, 1 } } };
-	Quadric infSphere({ 1, 1, 1 }, 0, -1, { 0, 0, 0 }, { 1, 1, 1 }, N, colors, I4, temp);
-	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 0, -1 }, { 2, 2, 2 }, N, colors, I1, I3, {}, {}, 0.9));
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 2, 3, -6 }, { 1, 2, 1 }, N, colors, I1, I3, {}, {}, 0.9));
-	quadrics.push_back(planeFromPoints({ -50, -1, 50 }, { -50, -1, -50 }, { 50, -1, -50 }, palette[(10) % palette.size()], { 0, 0 }, {1, 0}, {0, 1}, I7, 0.3));
-	quadrics.push_back(planeFromPoints({ -50, -1, 50 }, { 50, -1, -50 }, { 50, -1, 50 }, palette[(10) % palette.size()], { 0, 0 }, { 0, 1 }, { 1, 1 }, I7, 0.3));
-	//quadrics.push_back(planeFromPoints({ -10, -10, -7 }, { -10, 10, -7 }, { 10, 10, -7 }, palette[(11) % palette.size()], { 0, 0 }, { 1, 0 }, { 0, 1 }, I7, 0.3));
-	//quadrics.push_back(planeFromPoints({ -10, -10, -7 }, { 10, 10, -7 }, { 10, -10, -7 }, palette[(11) % palette.size()], { 0, 0 }, { 1, 0 }, { 0, 1 }, I7, 0.3));
+	Quadric infSphere({ 1, 1, 1 }, 0, -1, { 0, 0, 0 }, { 1, 1, 1 }, N, colors, Tex_env, Null_image);
+	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 0, -1 }, { 2, 2, 2 }, N, colors, Tex_sphere, Null_image, {}, {}, 1.0));
+	//quadrics.push_back(planeFromPoints({ -10, -1, 10 }, { -10, -1, -10 }, { 10, -1, -10 }, palette[(10) % palette.size()], { 0, 0 }, { 0, 1 }, { 1, 1 }, Tex_plane_2, 0.0));
+	//quadrics.push_back(planeFromPoints({ -10, -1, 10 }, { 10, -1, -10 }, { 10, -1, 10 }, palette[(10) % palette.size()], { 0, 0 }, { 1, 1 }, { 1, 0 }, Tex_plane_2, 0.0));
+	//quadrics.push_back(planeFromPoints({ -10, -10, -7 }, { -10, 10, -7 }, { 10, 10, -7 }, palette[(11) % palette.size()], { 0, 0 }, { 0, 1 }, { 1, 1 }, Tex_plane, 1.0));
+	//quadrics.push_back(planeFromPoints({ -10, -10, -7 }, { 10, 10, -7 }, { 10, -10, -7 }, palette[(11) % palette.size()], { 0, 0 }, { 1, 1 }, { 1, 0 }, Tex_plane, 1.0));
+	//quadrics[0].refractive_index = 1 + rotY / 10.0;
 
 #ifdef OBJFILE
 	objl::Loader Loader;
@@ -74,30 +72,20 @@ void renderScene()
 		for (unsigned int i = 0; i < Loader.LoadedMeshes.size(); i++)
 		{
 			objl::Mesh curMesh = Loader.LoadedMeshes[i];
-
-			/*cout << "Mesh " << i << ": " << curMesh.MeshName << "\n";
-			cout << "Vertices:\n";
-
-			for (int j = 0; j < curMesh.Vertices.size(); j++)
-			{
-				cout << "V" << j << ": " <<
-					"P(" << curMesh.Vertices[j].Position.X << ", " << curMesh.Vertices[j].Position.Y << ", " << curMesh.Vertices[j].Position.Z << ") " <<
-					"N(" << curMesh.Vertices[j].Normal.X << ", " << curMesh.Vertices[j].Normal.Y << ", " << curMesh.Vertices[j].Normal.Z << ") " <<
-					"TC(" << curMesh.Vertices[j].TextureCoordinate.X << ", " << curMesh.Vertices[j].TextureCoordinate.Y << ")\n";
-			}
-			cout << "Indices:\n";*/
+			
 			for (unsigned int j = 0; j < curMesh.Indices.size(); j += 3)
 			{
-				//cout << "T" << j / 3 << ": " << curMesh.Indices[j] << ", " << curMesh.Indices[j + 1] << ", " << curMesh.Indices[j + 2] << "\n";
 				cyPoint3d q1 = { curMesh.Vertices[curMesh.Indices[j]].Position.X, curMesh.Vertices[curMesh.Indices[j]].Position.Y, curMesh.Vertices[curMesh.Indices[j]].Position.Z };
 				cyPoint3d q2 = { curMesh.Vertices[curMesh.Indices[j + 1]].Position.X, curMesh.Vertices[curMesh.Indices[j + 1]].Position.Y, curMesh.Vertices[curMesh.Indices[j + 1]].Position.Z };
 				cyPoint3d q3 = { curMesh.Vertices[curMesh.Indices[j + 2]].Position.X, curMesh.Vertices[curMesh.Indices[j + 2]].Position.Y, curMesh.Vertices[curMesh.Indices[j + 2]].Position.Z };
 				cyPoint2d t1 = { curMesh.Vertices[curMesh.Indices[j]].TextureCoordinate.X, curMesh.Vertices[curMesh.Indices[j]].TextureCoordinate.Y };
 				cyPoint2d t2 = { curMesh.Vertices[curMesh.Indices[j + 1]].TextureCoordinate.X, curMesh.Vertices[curMesh.Indices[j + 1]].TextureCoordinate.Y };
 				cyPoint2d t3 = { curMesh.Vertices[curMesh.Indices[j + 2]].TextureCoordinate.X, curMesh.Vertices[curMesh.Indices[j + 2]].TextureCoordinate.Y };
-				quadrics.push_back(planeFromPoints(q1, q2, q3, palette[(9)%palette.size()], t1, t2, t3, I6, 0.7));
+				cyPoint3d c = { curMesh.MeshMaterial.Kd.X, curMesh.MeshMaterial.Kd.Y, curMesh.MeshMaterial.Kd.Z };
+				c = c.IsZero() ? palette[(j) % palette.size()] : c;
+
+				quadrics.push_back(planeFromPoints(q1 / 0.5, q2 / 0.5, q3 / 0.5, c, t1, t2, t3, Tex_plane_2, 1.0));
 			}
-			//cout << "\n";
 		}
 	}
 #endif
@@ -114,7 +102,6 @@ void renderScene()
 
 		for (int j = 0; j < Ymax; j++)
 		{
-			color = { 0,0,0 };
 
 #ifndef ANTI_ALIASED
 			rx = 0.5;
@@ -129,7 +116,7 @@ void renderScene()
 #endif
 
 			double weighted = 1.0 / (subPixX * subPixY);
-			cyPoint3d color = { 0, 0, 0 };
+			color = { 0, 0, 0 };
 
 			for (int p = 0; p < subPixX; p++)
 			{

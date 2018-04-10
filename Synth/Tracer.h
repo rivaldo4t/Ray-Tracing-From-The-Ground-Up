@@ -10,33 +10,22 @@
 #include "Camera.h"
 using namespace std;
 
-Image I1("tex17.jpg");
-//Image I2("tex13.jpg");
-Image I3("tex7.jpg");
-Image I4("space.jpg");
-//Image I5("tex6.jpg");
-Image I6("tex5.jpg");
-Image I7("tex14.jpg");
+//#define PROJTEX
+//#define SUBSURFACESSCATTERING
+//#define AREALIGHT
+
+Image Tex_env("textures/hood.jpg");
+Image Tex_plane("textures/stripes.jpg");
+Image Tex_plane_2("textures/stone_floor.jpg");
+Image Tex_sphere("textures/stripes.jpg");
+Image Norm_sphere("textures/map.jpg");
+Image Norm_plane("textures/stone.jpg");
+Image Null_image;
 
 double rotX = 0.0, rotY = 0.0;
 const int Xmax = 600, Ymax = 600;
 double farPlane = 100;
 float frameBuffer[Ymax][Xmax][3] = { 0 };
-
-cyPoint3d color, pix, camToPix, hitPoint, normalAtHit, reflectedAtHit;
-double X, Y, x, y, rx, ry;
-int subPixX, subPixY;
-double hitParam, hitParamTemp;
-
-cyPoint3d lightPos, lightColor, spotLightDir;
-cyPoint3d hitPointToLight, lightReflect, camToHitPoint;
-cyPoint3d colorTemp;
-cyPoint3d subSurfacePoint, subTolight;
-int objIndex;
-bool isInShadow = false;
-double spotLightComp, pointToLightDist, subToLightDist;
-double d, r;
-int maxBounces = 5;
 
 inline void keyRot(int key, int x, int y)
 {
@@ -82,7 +71,7 @@ inline bool shadowRay(int& objIndex, cyPoint3d& hitPoint, cyPoint3d& hitPointToL
 	{
 		/*if (i == objIndex)
 			continue;*/
-		double hitParamTemp = quadrics[i].intersect2(hitPoint, hitPointToLight);
+		double hitParamTemp = quadrics[i].intersect(hitPoint, hitPointToLight);
 		if (hitParamTemp < pointToLightDist)
 			return true;
 	}
@@ -188,100 +177,129 @@ inline cyPoint3d computeSolidTexture(cyPoint3d& hitPoint, Camera proj, int& objI
 
 inline cyPoint3d castRays(cyPoint3d pos, cyPoint3d dir, vector<Quadric>& quadrics, vector<Light>& lights, Quadric& infSphere, int bounce)
 {
-		objIndex = -1;
-		hitParam = farPlane;
-		cyPoint3d color = {0, 0, 0};
+	cyPoint3d hitPoint, normalAtHit, reflectedAtHit;
+	cyPoint3d lightPos, lightColor, spotLightDir;
+	cyPoint3d hitPointToLight, lightReflect, camToHitPoint;
+	cyPoint3d colorTemp;
+	cyPoint3d subSurfacePoint, subTolight;
+	int objIndex;
+	bool isInShadow = false;
+	double spotLightComp, pointToLightDist, subToLightDist;
+	double hitParam, hitParamTemp;
+	double d, r;
+	int maxBounces = 5;
+	cyPoint3d refractedAtHit, recurRay;
 
-		for (unsigned int index = 0; index < quadrics.size(); index++)
+	objIndex = -1;
+	hitParam = farPlane;
+	cyPoint3d color = {0, 0, 0};
+
+	for (unsigned int index = 0; index < quadrics.size(); index++)
+	{
+		hitParamTemp = quadrics[index].intersect(pos, dir);
+		if (hitParamTemp < hitParam)
 		{
-			hitParamTemp = quadrics[index].intersect2(pos, dir);
-			if (hitParamTemp < hitParam)
-			{
-				hitParam = hitParamTemp;
-				objIndex = index;
-			}
+			hitParam = hitParamTemp;
+			objIndex = index;
 		}
+	}
 
-		if (objIndex == -1)
+	if (objIndex == -1)
+	{
+		// take care of hitpoint
+		//color = { 0.4, 0.4, 0.4 };
+		color = infSphere.computeTextureColor(hitPoint, dir, true);
+	}
+	else
+	{
+		colorTemp = { 0,0,0 };
+		Quadric q = quadrics[objIndex];
+		hitPoint = pos + dir * hitParam;
+		camToHitPoint = dir;
+		
+		normalAtHit = q.normalAtHitPoint(hitPoint);
+		if ((-dir).Dot(normalAtHit) < 0)
+			normalAtHit = -normalAtHit;
+		
+		//q.computeTextureColor(hitPoint, normalAtHit);
+
+		double cosTheta = dir.Dot(normalAtHit);
+		reflectedAtHit = (dir - 2 * (cosTheta * normalAtHit)).GetNormalized();
+		double nu = q.refractive_index;
+		double refracTerm = ((cosTheta * cosTheta) - 1) / (nu * nu) + 1;
+		if (refracTerm > 0)
 		{
-			// take care of hitpoint
-			//color = { 0.4, 0.4, 0.4 };
-			color = infSphere.computeTextureColor(hitPoint, dir);
+			refractedAtHit = (dir / nu - (cosTheta / nu + sqrt(refracTerm)) * normalAtHit).GetNormalized();
+			recurRay = refractedAtHit;
 		}
 		else
-		{
-			colorTemp = { 0,0,0 };
-			Quadric q = quadrics[objIndex];
-			hitPoint = pos + dir * hitParam;
-			camToHitPoint = dir;
-			normalAtHit = q.normalAtHitPoint(hitPoint);
-			reflectedAtHit = (dir - 2 * (dir.Dot(normalAtHit)*normalAtHit)).GetNormalized();
-			//q.computeTextureColor(hitPoint, normalAtHit);
+			recurRay = reflectedAtHit;
+		
+		q.computeTextureColor(hitPoint, normalAtHit);
 
 #ifdef AREALIGHT
-			for (unsigned int a = 0; a < areaLights.size(); a++)
-				colorTemp += computeColorFromAreaLight(hitPoint, dir, areaLights[a], objIndex, q, quadrics);
+		for (unsigned int a = 0; a < areaLights.size(); a++)
+			colorTemp += computeColorFromAreaLight(hitPoint, dir, areaLights[a], objIndex, q, quadrics);
 #else
-			// regular shadow ray color computation
-			for (unsigned int lightIndex = 0; lightIndex < lights.size(); lightIndex++)
-			{
-				lightPos = lights[lightIndex].pos;
-				lightColor = lights[lightIndex].color;
-				spotLightDir = lights[lightIndex].dir;
-				hitPointToLight = lightPos - hitPoint;
-				pointToLightDist = hitPointToLight.Length();
-				hitPointToLight.Normalize();
+		for (unsigned int lightIndex = 0; lightIndex < lights.size(); lightIndex++)
+		{
+			lightPos = lights[lightIndex].pos;
+			lightColor = lights[lightIndex].color;
+			spotLightDir = lights[lightIndex].dir;
+			hitPointToLight = lightPos - hitPoint;
+			pointToLightDist = hitPointToLight.Length();
+			hitPointToLight.Normalize();
 
-				spotLightComp = spotLightDir.IsZero() ? 1.0 : clamp(spotLightDir.GetNormalized().Dot(-hitPointToLight), 0.5, 0.51);
-				colorTemp += q.computeAmbientColor();
+			spotLightComp = spotLightDir.IsZero() ? 1.0 : clamp(spotLightDir.GetNormalized().Dot(-hitPointToLight), 0.5, 0.51);
+			colorTemp += q.computeAmbientColor();
 
 #ifndef SUBSURFACESSCATTERING
-				isInShadow = shadowRay(objIndex, hitPoint, hitPointToLight, pointToLightDist, quadrics);
-				if (isInShadow == false)
-				{
-					colorTemp += q.computeDiffuseColor(normalAtHit, hitPointToLight, lightColor, pointToLightDist, spotLightComp);
-					colorTemp += q.computeSpecularColor(normalAtHit, hitPointToLight, lightColor, camToHitPoint, spotLightComp);
-					colorTemp += q.computeBorderColor(normalAtHit, camToHitPoint, spotLightComp);
-				}
-#ifdef PROJTEX
-				// type(second last parameter) = 0 - parallel
-				// type = 1 - perspective
-				// solid(last parameter) = 0 - solid texturing
-				// solid = 1 - light shading
-				solidColor = computeSolidTexture(hitPoint, proj, objIndex, quadrics, I5, 0, 0);
-				colorTemp = solidColor.IsZero() ? colorTemp : solidColor;
-#endif
-#else
-				d = 0.1;
-				r = 0;
-				subSurfacePoint = hitPoint - (d)*normalAtHit;
-				subTolight = lightPos - subSurfacePoint;
-				subToLightDist = subTolight.Length();
-				subTolight.Normalize();
-				isInShadow = subTolight.Dot(normalAtHit) < d ? true : false;
-
-				//if (isInShadow == false)
-				//{
-				for (unsigned int qi = 0; qi < quadrics.size(); qi++)
-				{
-					r += quadrics[qi].intersect_length(subSurfacePoint, subTolight, subToLightDist);
-				}
-
-				colorTemp += q.computeDiffuseColor(normalAtHit, hitPointToLight, lightColor, pointToLightDist, spotLightComp, d / r);
+			isInShadow = shadowRay(objIndex, hitPoint, hitPointToLight, pointToLightDist, quadrics);
+			if (isInShadow == false)
+			{
+				colorTemp += q.computeDiffuseColor(normalAtHit, hitPointToLight, lightColor, pointToLightDist, spotLightComp);
 				colorTemp += q.computeSpecularColor(normalAtHit, hitPointToLight, lightColor, camToHitPoint, spotLightComp);
 				colorTemp += q.computeBorderColor(normalAtHit, camToHitPoint, spotLightComp);
-				//}
-#endif
 			}
+#ifdef PROJTEX
+			// type(second last parameter) = 0 - parallel
+			// type = 1 - perspective
+			// solid(last parameter) = 0 - solid texturing
+			// solid = 1 - light shading
+			solidColor = computeSolidTexture(hitPoint, proj, objIndex, quadrics, I5, 0, 0);
+			colorTemp = solidColor.IsZero() ? colorTemp : solidColor;
 #endif
-			if (bounce < maxBounces)
+#else
+			d = 0.1;
+			r = 0;
+			subSurfacePoint = hitPoint - (d)*normalAtHit;
+			subTolight = lightPos - subSurfacePoint;
+			subToLightDist = subTolight.Length();
+			subTolight.Normalize();
+			isInShadow = subTolight.Dot(normalAtHit) < d ? true : false;
+
+			//if (isInShadow == false)
+			//{
+			for (unsigned int qi = 0; qi < quadrics.size(); qi++)
 			{
-				color += (1.0 - q.reflectivity) * colorTemp;
-				color += q.reflectivity * castRays(hitPoint, reflectedAtHit, quadrics, lights, infSphere, bounce + 1);
+				r += quadrics[qi].intersect_length(subSurfacePoint, subTolight, subToLightDist);
 			}
-			else
-				color += colorTemp;
+
+			colorTemp += q.computeDiffuseColor(normalAtHit, hitPointToLight, lightColor, pointToLightDist, spotLightComp, d / r);
+			colorTemp += q.computeSpecularColor(normalAtHit, hitPointToLight, lightColor, camToHitPoint, spotLightComp);
+			colorTemp += q.computeBorderColor(normalAtHit, camToHitPoint, spotLightComp);
+			//}
+#endif
 		}
+#endif
+		if (bounce < maxBounces)
+		{
+			color += (1.0 - q.reflectivity) * colorTemp;
+			color += q.reflectivity * castRays(hitPoint, recurRay, quadrics, lights, infSphere, bounce + 1);
+		}
+		else
+			color += colorTemp;
+	}
 	return color;
 }
 
@@ -292,7 +310,6 @@ inline Quadric planeFromPoints(cyPoint3d p0, cyPoint3d p1, cyPoint3d p2, cyPoint
 	cyPoint3d n2 = planarVec1.Cross(planarVec2).GetNormalized();
 	cyPoint3d n0 = planarVec1.GetNormalized();
 	cyPoint3d n1 = n0.Cross(n2).GetNormalized();
-	Image temp;
 	vector<pair<double, cyPoint3d>> colors = { { 0.01, c },{ 0.5, c },{ 0.0, c },{ 0.0,{ 1, 1, 1 } } };
-	return Quadric({ 0, 0, 0 }, 1, 0, p0, { 1, 1, 1 }, { n0, n1, n2 }, colors, I, temp, { p0, p1, p2 }, { t1, t2, t3 }, ref);
+	return Quadric({ 0, 0, 0 }, 1, 0, (p0 + p1 + p2) / 3, { 1, 1, 1 }, { n0, n1, n2 }, colors, I, Null_image, { p0, p1, p2 }, { t1, t2, t3 }, ref);
 }

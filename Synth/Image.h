@@ -13,7 +13,7 @@ public:
 	uint8_t* data;
 	vector<vector<cyPoint3d>> texture;
 
-	Image() {}
+	Image() { data = NULL; }
 
 	Image(const char* path)
 	{
