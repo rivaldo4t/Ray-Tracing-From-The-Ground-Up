@@ -33,6 +33,7 @@ public:
 		stbi_image_free(data);
 	}
 
+	// fix the hardcoding
 	static void writeImage(const char* path, float (*frameBuffer)[600][3])
 	{
 		uint8_t* rgb_image = new uint8_t[Xmax * Ymax * 3];

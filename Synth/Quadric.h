@@ -38,7 +38,7 @@ public:
 		vector<cyPoint3d> _points = {},
 		vector<cyPoint2d> _texpoints = {}, 
 		double _ref = 0.0,
-		double _ior = 1.5) :
+		double _ior = 1.6) :
 		ai2(_ai2), a21(_a21), a00(_a00), qc(_qc), si(_si), N(_N),
 		ambientFact(_colors[0].first), ambientColor(_colors[0].second),
 		diffuseFact(_colors[1].first), diffuseColor(_colors[1].second),
@@ -322,14 +322,16 @@ public:
 
 	inline cyPoint3d computeTextureColor(cyPoint3d hitPoint, cyPoint3d normalAtHit, bool env = false)
 	{
-		cyPoint3d color = {0, 0, 0};
-		double u, v, ratioX, ratioY;
-		int pixelX, pixelY;
-		int w, h;
-
-		switch(type)
+		if (textureImage.data != NULL)
 		{
-			//plane
+			cyPoint3d color = { 0, 0, 0 };
+			double u, v, ratioX, ratioY;
+			int pixelX, pixelY;
+			int w, h;
+
+			switch (type)
+			{
+				//plane
 			case 0:
 			{
 				w = textureImage.width;
@@ -341,14 +343,14 @@ public:
 				v = v * h;
 				pixelX = (int)(u);
 				pixelY = (int)(v);
-				
+
 				ratioX = u - pixelX;
 				ratioY = v - pixelY;
-				
+
 				color = textureImage.texture[(pixelY + 0) % h][(pixelX + 0) % w] * (1 - ratioX) * (1 - ratioY) +
-						textureImage.texture[(pixelY + 1) % h][(pixelX + 0) % w] * (1 - ratioX) * ratioY +
-						textureImage.texture[(pixelY + 0) % h][(pixelX + 1) % w] * ratioX * (1 - ratioY) +
-						textureImage.texture[(pixelY + 1) % h][(pixelX + 1) % w] * ratioX * ratioY;
+					textureImage.texture[(pixelY + 1) % h][(pixelX + 0) % w] * (1 - ratioX) * ratioY +
+					textureImage.texture[(pixelY + 0) % h][(pixelX + 1) % w] * ratioX * (1 - ratioY) +
+					textureImage.texture[(pixelY + 1) % h][(pixelX + 1) % w] * ratioX * ratioY;
 
 				break;
 			}
@@ -360,29 +362,29 @@ public:
 				w = textureImage.width;
 				h = textureImage.height;
 
-				if(env)
+				if (env)
 					phi = N[2].Dot(normalAtHit) / si[2];
 				else
 					phi = N[2].Dot(hitPoint - qc) / si[2];
 				phi = acos(phi);
 				v = phi / cy::cyPi<double>();
-				
+
 				if (env)
 					theta = N[1].Dot(normalAtHit) / si[1];
 				else
 					theta = N[1].Dot(hitPoint - qc) / si[1];
 				theta = theta / sin(phi);
 				theta = acos(theta);
-				
-				if(env)
+
+				if (env)
 					tempX = N[0].Dot(normalAtHit) / si[0];
 				else
 					tempX = N[0].Dot(hitPoint - qc) / si[0];
 				theta = tempX >= 0 ? theta : (cy::cyPi<double>() * 2) - theta;
 				u = theta / (cy::cyPi<double>() * 2);
-				
+
 				//handle negative dot product
-				
+
 				v = v * h;
 				u = u * w;
 				pixelY = (int)(v);
@@ -391,18 +393,19 @@ public:
 				ratioX = u - pixelX;
 
 				color = textureImage.texture[(pixelY + 0) % h][(pixelX + 0) % w] * (1 - ratioX) * (1 - ratioY) +
-						textureImage.texture[(pixelY + 1) % h][(pixelX + 0) % w] * (1 - ratioX) * ratioY +
-						textureImage.texture[(pixelY + 0) % h][(pixelX + 1) % w] * ratioX * (1 - ratioY) +
-						textureImage.texture[(pixelY + 1) % h][(pixelX + 1) % w] * ratioX * ratioY;
+					textureImage.texture[(pixelY + 1) % h][(pixelX + 0) % w] * (1 - ratioX) * ratioY +
+					textureImage.texture[(pixelY + 0) % h][(pixelX + 1) % w] * ratioX * (1 - ratioY) +
+					textureImage.texture[(pixelY + 1) % h][(pixelX + 1) % w] * ratioX * ratioY;
 
 				break;
 			}
+			}
+
+			diffuseColor = color;
+			specularColor = color;
+			refractive_index = color[0] > 0.5 ? 1.5 : 2.0;
+
+			return color;
 		}
-
-		diffuseColor = color;
-		specularColor = color;
-		refractive_index = color[0] > 0.5 ? 1.5 : 2.0;
-
-		return color;
 	}
 };

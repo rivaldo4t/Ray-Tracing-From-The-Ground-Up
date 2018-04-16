@@ -13,11 +13,16 @@ using namespace std;
 //#define PROJTEX
 //#define SUBSURFACESSCATTERING
 //#define AREALIGHT
+//#define GLOSSY
+//#define TRANSLUCENT
 
-Image Tex_env("textures/hood.jpg");
-Image Tex_plane("textures/stripes.jpg");
+Image Tex_env("textures/nebula.jpg");
+Image Tex_plane("textures/tile.jpg");
 Image Tex_plane_2("textures/stone_floor.jpg");
-Image Tex_sphere("textures/stripes.jpg");
+Image Tex_sphere("textures/moon.jpg");
+Image Tex_sphere_2("textures/mars.jpg");
+Image Tex_sphere_3("textures/nebula.jpg");
+Image Tex_sphere_4("textures/jupiter.jpg");
 Image Norm_sphere("textures/map.jpg");
 Image Norm_plane("textures/stone.jpg");
 Image Null_image;
@@ -26,6 +31,8 @@ double rotX = 0.0, rotY = 0.0;
 const int Xmax = 600, Ymax = 600;
 double farPlane = 100;
 float frameBuffer[Ymax][Xmax][3] = { 0 };
+AreaLight areaLight({ 0, 10, -2 }, { 1, 1, 1 }, { 0, -1, 0 }, { 0, 0, 1 });
+vector<AreaLight> areaLights = { areaLight };
 
 inline void keyRot(int key, int x, int y)
 {
@@ -226,14 +233,32 @@ inline cyPoint3d castRays(cyPoint3d pos, cyPoint3d dir, vector<Quadric>& quadric
 		double cosTheta = dir.Dot(normalAtHit);
 		reflectedAtHit = (dir - 2 * (cosTheta * normalAtHit)).GetNormalized();
 		double nu = q.refractive_index;
-		double refracTerm = ((cosTheta * cosTheta) - 1) / (nu * nu) + 1;
-		if (refracTerm > 0)
-		{
-			refractedAtHit = (dir / nu - (cosTheta / nu + sqrt(refracTerm)) * normalAtHit).GetNormalized();
-			recurRay = refractedAtHit;
-		}
-		else
+
+#ifdef GLOSSY
+		cyPoint3d randomVec(rand() % 10 / 10.0, rand() % 10 / 10.0, rand() % 10 / 10.0);
+		reflectedAtHit += randomVec*0.36;
+		reflectedAtHit.Normalize();
+#endif
+
+		// handle better
+		if (nu == 0.0)
 			recurRay = reflectedAtHit;
+		else
+		{
+			double refracTerm = ((cosTheta * cosTheta) - 1) / (nu * nu) + 1;
+			if (refracTerm > 0)
+			{
+				refractedAtHit = (dir / nu - (cosTheta / nu + sqrt(refracTerm)) * normalAtHit).GetNormalized();
+#ifdef TRANSLUCENT
+				cyPoint3d randomVec2(rand() % 10 / 10.0, rand() % 10 / 10.0, rand() % 10 / 10.0);
+				refractedAtHit += randomVec*0.16;
+				refractedAtHit.Normalize();
+#endif
+				recurRay = refractedAtHit;
+			}
+			else
+				recurRay = reflectedAtHit;
+		}
 		
 		q.computeTextureColor(hitPoint, normalAtHit);
 
@@ -285,7 +310,7 @@ inline cyPoint3d castRays(cyPoint3d pos, cyPoint3d dir, vector<Quadric>& quadric
 				r += quadrics[qi].intersect_length(subSurfacePoint, subTolight, subToLightDist);
 			}
 
-			colorTemp += q.computeDiffuseColor(normalAtHit, hitPointToLight, lightColor, pointToLightDist, spotLightComp, d / r);
+			colorTemp += q.computeDiffuseColor(normalAtHit, hitPointToLight, lightColor, pointToLightDist, spotLightComp, d / (r));
 			colorTemp += q.computeSpecularColor(normalAtHit, hitPointToLight, lightColor, camToHitPoint, spotLightComp);
 			colorTemp += q.computeBorderColor(normalAtHit, camToHitPoint, spotLightComp);
 			//}
@@ -303,7 +328,7 @@ inline cyPoint3d castRays(cyPoint3d pos, cyPoint3d dir, vector<Quadric>& quadric
 	return color;
 }
 
-inline Quadric planeFromPoints(cyPoint3d p0, cyPoint3d p1, cyPoint3d p2, cyPoint3d c, cyPoint2d t1, cyPoint2d t2, cyPoint2d t3, Image& I, double ref)
+inline Quadric planeFromPoints(cyPoint3d p0, cyPoint3d p1, cyPoint3d p2, cyPoint3d c, cyPoint2d t1, cyPoint2d t2, cyPoint2d t3, Image& I, Image& N, double refl = 0.0, double refr = 1.6)
 {
 	cyPoint3d planarVec1 = p1 - p0;
 	cyPoint3d planarVec2 = p2 - p0;
@@ -311,5 +336,5 @@ inline Quadric planeFromPoints(cyPoint3d p0, cyPoint3d p1, cyPoint3d p2, cyPoint
 	cyPoint3d n0 = planarVec1.GetNormalized();
 	cyPoint3d n1 = n0.Cross(n2).GetNormalized();
 	vector<pair<double, cyPoint3d>> colors = { { 0.01, c },{ 0.5, c },{ 0.0, c },{ 0.0,{ 1, 1, 1 } } };
-	return Quadric({ 0, 0, 0 }, 1, 0, (p0 + p1 + p2) / 3, { 1, 1, 1 }, { n0, n1, n2 }, colors, I, Null_image, { p0, p1, p2 }, { t1, t2, t3 }, ref);
+	return Quadric({ 0, 0, 0 }, 1, 0, (p0 + p1 + p2) / 3, { 1, 1, 1 }, { n0, n1, n2 }, colors, I, N, { p0, p1, p2 }, { t1, t2, t3 }, refl, refr);
 }
