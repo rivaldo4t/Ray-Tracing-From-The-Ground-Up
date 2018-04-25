@@ -20,15 +20,16 @@ Image Tex_env("textures/nebula.jpg");
 Image Tex_plane("textures/tile.jpg");
 Image Tex_plane_2("textures/stone_floor.jpg");
 Image Tex_sphere("textures/moon.jpg");
-Image Tex_sphere_2("textures/mars.jpg");
-Image Tex_sphere_3("textures/nebula.jpg");
+Image Tex_sphere_2("textures/earth1.jpg");
+Image Tex_sphere_3("textures/earth2.jpg");
 Image Tex_sphere_4("textures/jupiter.jpg");
 Image Norm_sphere("textures/map.jpg");
 Image Norm_plane("textures/stone.jpg");
 Image Null_image;
+Image camera_painting("textures/abs6_720.jpg");
 
 double rotX = 0.0, rotY = 0.0;
-const int Xmax = 600, Ymax = 600;
+const int Xmax = 1280, Ymax = 720;
 double farPlane = 100;
 float frameBuffer[Ymax][Xmax][3] = { 0 };
 AreaLight areaLight({ 0, 10, -2 }, { 1, 1, 1 }, { 0, -1, 0 }, { 0, 0, 1 });
@@ -39,19 +40,23 @@ inline void keyRot(int key, int x, int y)
 	switch (key)
 	{
 	case GLUT_KEY_UP:
-		rotY -= 1.0;
+		//rotY -= 1.0;
+		rotY -= 0.1;
 		glutPostRedisplay();
 		break;
 	case GLUT_KEY_DOWN:
-		rotY += 1.0;
+		/*rotY += 1.0;*/
+		rotY += 0.1;
 		glutPostRedisplay();
 		break;
 	case GLUT_KEY_LEFT:
-		rotX -= 5.0;
+		//rotX -= 5.0;
+		rotX -= 0.1;
 		glutPostRedisplay();
 		break;
 	case GLUT_KEY_RIGHT:
-		rotX += 5.0;
+		//rotX += 5.0;
+		rotX += 0.1;
 		glutPostRedisplay();
 		break;
 	}
@@ -328,7 +333,7 @@ inline cyPoint3d castRays(cyPoint3d pos, cyPoint3d dir, vector<Quadric>& quadric
 	return color;
 }
 
-inline Quadric planeFromPoints(cyPoint3d p0, cyPoint3d p1, cyPoint3d p2, cyPoint3d c, cyPoint2d t1, cyPoint2d t2, cyPoint2d t3, Image& I, Image& N, double refl = 0.0, double refr = 1.6)
+inline Quadric planeFromPoints(cyPoint3d p0, cyPoint3d p1, cyPoint3d p2, cyPoint3d c, cyPoint2d t1, cyPoint2d t2, cyPoint2d t3, Image& I, Image& N, double refl = 0.0, double refr = 0.0)
 {
 	cyPoint3d planarVec1 = p1 - p0;
 	cyPoint3d planarVec2 = p2 - p0;

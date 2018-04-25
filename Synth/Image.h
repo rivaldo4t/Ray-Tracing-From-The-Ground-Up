@@ -34,7 +34,7 @@ public:
 	}
 
 	// fix the hardcoding
-	static void writeImage(const char* path, float (*frameBuffer)[600][3])
+	static void writeImage(const char* path, float (*frameBuffer)[720][3])
 	{
 		uint8_t* rgb_image = new uint8_t[Xmax * Ymax * 3];
 		int k = 0;
