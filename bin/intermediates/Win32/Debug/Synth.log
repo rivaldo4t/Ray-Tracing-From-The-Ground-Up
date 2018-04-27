@@ -1,6 +1,0 @@
-﻿  Tracer.cpp
-c:\users\tushar\source\repos\synth10\synth\tracer.h(222): warning C4101: 'subToLightDist': unreferenced local variable
-c:\users\tushar\source\repos\synth10\synth\tracer.h(224): warning C4101: 'r': unreferenced local variable
-c:\users\tushar\source\repos\synth10\synth\tracer.h(224): warning C4101: 'd': unreferenced local variable
-c:\users\tushar\source\repos\synth10\synth\quadric.h(410): warning C4715: 'Quadric::computeTextureColor': not all control paths return a value
-  Synth.vcxproj -> C:\Users\TUSHAR\source\repos\Synth10\bin\Win32\Debug\Synth.exe
