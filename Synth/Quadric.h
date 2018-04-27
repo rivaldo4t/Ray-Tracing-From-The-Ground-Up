@@ -61,7 +61,7 @@ public:
 	{
 		double absmax = abs(a[0]);
 		bool minus = a[0] < 0 ? true : false;
-		for (int i = 1; i < 3; i++)
+		for (int i = 1; i <= 2; i++)
 		{
 			if (abs(a[i]) > absmax)
 			{
@@ -113,15 +113,18 @@ public:
 				A0 = (ph - p1).Cross(ph - p2);
 				A1 = (ph - p2).Cross(ph - p0);
 				A2 = (ph - p0).Cross(ph - p1);
-				double maxA, maxA0, maxA1, maxA2;
+				/*double maxA, maxA0, maxA1, maxA2;
 				maxA = absMax(A);
 				maxA0 = absMax(A0);
 				maxA1 = absMax(A1);
 				maxA2 = absMax(A2);
 				double w = maxA0 / maxA;
 				s = maxA1 / maxA;
-				t = maxA2 / maxA;
-				if (s + t + w > 0.9999 && s + t + w < 1.0001 && s >= 0 && s <= 1 && t >= 0 && t <= 1 && w >= 0 && w <= 1)
+				t = maxA2 / maxA;*/
+				s = A1.Length() / A.Length();
+				t = A2.Length() / A.Length();
+				//if (s + t + w > 0.9999 && s + t + w < 1.0001 && s >= 0 && s <= 1 && t >= 0 && t <= 1 && w >= 0 && w <= 1)
+				if (abs(A0.Length() + A1.Length() + A2.Length() - A.Length()) < 0.00001)
 					return hitParam;
 				else 
 					return INT_MAX;
@@ -347,6 +350,7 @@ public:
 				ratioX = u - pixelX;
 				ratioY = v - pixelY;
 
+				//color = textureImage.texture[(pixelY + 0) % h][(pixelX + 0) % w];
 				color = textureImage.texture[(pixelY + 0) % h][(pixelX + 0) % w] * (1 - ratioX) * (1 - ratioY) +
 					textureImage.texture[(pixelY + 1) % h][(pixelX + 0) % w] * (1 - ratioX) * ratioY +
 					textureImage.texture[(pixelY + 0) % h][(pixelX + 1) % w] * ratioX * (1 - ratioY) +

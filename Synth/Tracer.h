@@ -16,50 +16,66 @@ using namespace std;
 //#define GLOSSY
 //#define TRANSLUCENT
 
-Image Tex_env("textures/nebula.jpg");
-Image Tex_plane("textures/tile.jpg");
-Image Tex_plane_2("textures/stone_floor.jpg");
-Image Tex_sphere("textures/moon.jpg");
-Image Tex_sphere_2("textures/earth1.jpg");
-Image Tex_sphere_3("textures/earth2.jpg");
-Image Tex_sphere_4("textures/jupiter.jpg");
-Image Norm_sphere("textures/map.jpg");
-Image Norm_plane("textures/stone.jpg");
+Image Tex_env("textures/AdobeStock_space_1.jpeg");
+Image Tex_plane("textures/AdobeStock_stone.jpeg");
+//Image Tex_plane_2("textures/stone_floor.jpg");
+//Image Tex_sphere("textures/AdobeStock_space_3.1.jpeg");
+//Image Tex_sphere_2("textures/AdobeStock_space_2.1.jpeg");
+//Image Tex_sphere_3("textures/nebula.jpg");
+//Image Tex_sphere_4("textures/jupiter.jpg");
+//Image Norm_sphere("textures/map.jpg");
+//Image Norm_plane("textures/stone.jpg");
+//Image camera_painting("textures/abs6_720.jpg");
 Image Null_image;
-Image camera_painting("textures/abs6_720.jpg");
 
 double rotX = 0.0, rotY = 0.0;
-const int Xmax = 1280, Ymax = 720;
+//const int Xmax = 1920, Ymax = 1080;
+const int Xmax = 200, Ymax = 200;
 double farPlane = 100;
 float frameBuffer[Ymax][Xmax][3] = { 0 };
 AreaLight areaLight({ 0, 10, -2 }, { 1, 1, 1 }, { 0, -1, 0 }, { 0, 0, 1 });
 vector<AreaLight> areaLights = { areaLight };
+double animParam = 0, animParam2 = 0;
+double cp_x = 0, cp_y = 0, cp_z = 0, cp_r, cp_g, cp_b;
 
 inline void keyRot(int key, int x, int y)
 {
 	switch (key)
 	{
 	case GLUT_KEY_UP:
-		//rotY -= 1.0;
-		rotY -= 0.1;
+		rotY -= 1.0;
+		//rotY -= 0.1;
 		glutPostRedisplay();
 		break;
 	case GLUT_KEY_DOWN:
-		/*rotY += 1.0;*/
-		rotY += 0.1;
+		rotY += 1.0;
+		//rotY += 0.1;
+		//lights.push_back({ { 0, 10,  0 },{ 0.5, 0.5, 0.5 },{ 0, -10, 0 } });
 		glutPostRedisplay();
 		break;
 	case GLUT_KEY_LEFT:
-		//rotX -= 5.0;
-		rotX -= 0.1;
+		rotX -= 5.0;
+		//rotX -= 0.1;
+		//lights.push_back({ { -10, 10,  0 },{ 0.5, 0.5, 0.5 },{ 10, -10, 0 } });
 		glutPostRedisplay();
 		break;
 	case GLUT_KEY_RIGHT:
-		//rotX += 5.0;
-		rotX += 0.1;
+		rotX += 5.0;
+		//rotX += 0.1;
+		//lights.push_back({ { 10, 10,  0 },{ 0.5, 0.5, 0.5 },{ -10, -10, 0 } });
 		glutPostRedisplay();
 		break;
 	}
+}
+
+cyPoint3d projectPoint(cyPoint3d p, cyPoint3d o, double d)
+{
+	return p;
+	cyPoint3d newP;
+	cyPoint3d ray = p - o;
+	double dist = ray.Length();
+	newP = o + d * dist * ray.GetNormalized();
+	return newP;
 }
 
 inline void rotVec(cyPoint3d& v1, cyPoint3d v2, double degAngle)
@@ -280,7 +296,7 @@ inline cyPoint3d castRays(cyPoint3d pos, cyPoint3d dir, vector<Quadric>& quadric
 			pointToLightDist = hitPointToLight.Length();
 			hitPointToLight.Normalize();
 
-			spotLightComp = spotLightDir.IsZero() ? 1.0 : clamp(spotLightDir.GetNormalized().Dot(-hitPointToLight), 0.5, 0.51);
+			spotLightComp = spotLightDir.IsZero() ? 1.0 : clamp(spotLightDir.GetNormalized().Dot(-hitPointToLight), 0.9, 0.91);
 			colorTemp += q.computeAmbientColor();
 
 #ifndef SUBSURFACESSCATTERING

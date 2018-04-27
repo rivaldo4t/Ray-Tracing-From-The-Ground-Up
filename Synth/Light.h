@@ -7,7 +7,10 @@ public:
 	cyPoint3d color;
 	cyPoint3d dir;
 
-	Light(cyPoint3d _pos, cyPoint3d _color, cyPoint3d _dir = { 0.0, 0.0, 0.0 }) : pos(_pos), color(_color), dir(_dir) {}
+	Light(cyPoint3d _pos, cyPoint3d _color, cyPoint3d _dir = { 0.0, 0.0, 0.0 }) : pos(_pos), color(_color), dir(_dir) 
+	{
+		dir = dir.IsZero() ? dir : dir.GetNormalized();
+	}
 };
 
 class DirectionalLight : public Light

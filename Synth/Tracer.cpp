@@ -14,45 +14,45 @@ using namespace std;
 //#define DEPTH_OF_FIELD
 //#define MOTION_BLUR
 //#define CAM_PAINTING
-
-double outCount = 0;
-
+cyPoint3d eye(0, 0, 4);
+cyPoint3d view(0, 0, -1);
+cyPoint3d up(0, 1, 0);
 void renderScene()
 {
 	cyPoint3d color, pix, camToPix;
 	double X, Y, x, y, rx, ry;
 	int subPixX, subPixY;
 	
-	cyPoint3d up(0, 1, 0);
+	//cyPoint3d up(0, 1, 0);
 	
-	cyPoint3d eye(0, 0, 5);
+	//cyPoint3d eye(0, 0, 10);
 	// Stereo configuration
 	//eye = int(outCount*20) % 2 == 0 ? cyPoint3d{ 0.2, 0, 5 } : cyPoint3d{ -0.2, 0, 5 };
 	//eye = { 0.3, 0, 5 };
 	
-	cyPoint3d view(0, 0, -1);
+	//cyPoint3d view(0, 0, -1);
 	//point view at (0, 0, 0)
-	//view = (cyPoint3d{ 0, 0, 0 } - eye).GetNormalized();
+	//view = (cyPoint3d(0, 0, 0) - eye).GetNormalized();
 	
 	//rotVec(view, up, rotX);
 	//eye += rotY * view;
-	//outCount = outCount > 6.3 ? 0 : outCount;			//2*pie = 6.3
+	//animParam = animParam > 6.3 ? 0 : animParam;			//2*pie = 6.3
 
 	Camera cam = {eye, view, up, double(Xmax) / double(Ymax) * 10, 10, 6};
-	vector<Light> lights = {	//{{ -10,  10, -10 }, { 0.5, 0.5, 0.5 }}, 
-								//{{  10,  10, -10 }, { 0.5, 0.5, 0.5 }},
-								//{{  0,  10, -10 }, { 0.5, 0.5, 0.5 }},
-								//{{  0, -10,  0 }, { 0.5, 0.5, 0.5 }},
-								{{ 0,  10, 0 }, { 0.5, 0.5, 0.5 }},
-								//{ { 4 * cos(outCount),  10,  4 * sin(outCount) },{ 0.8, 0.8, 0.8 } },
-								{ { 0,  0, 10 },{ 0.5, 0.5, 0.5 } },
-								{{ -10,  10,  0 }, { 0.5, 0.5, 0.5 }},
-								//{{ 10,  10,  0 }, { 0.5, 0.5, 0.5 }},
-								//{{ -10, -10, -10 }, { 0.5, 0.5, 0.5 }},
-								//{{  0,  0,  10 }, { 0.5, 0.5, 0.5 }},
-								//{{ -10,  0,  0 }, { 0.5, 0.5, 0.5 }},
-	};
+
+	//vector<Light> lights = {	
+	//							{ { 0,  10, 0 },{ 0.5, 0.5, 0.5 } },
+	//							{ { 0,  0, 5 },{ 0.5, 0.5, 0.5 } },
+	//							{ { -10,  0,  5 },{ 0.5, 0.5, 0.5 } },
+	//							{{ 10,  0,  5 }, { 0.5, 0.5, 0.5 }},
+	//};
 	
+	vector<Light> lights = {
+		{ { 10 * cos(animParam),  10 * sin(animParam), 0 },{ 0.0, 0.5, 0.5 } },
+		{ { -10 * cos(animParam),  0,  10 * sin(animParam) },{ 0.5, 0.0, 0.5 } },
+		{ { 0,  10 * cos(animParam),  10 * sin(animParam) },{ 0.5, 0.5, 0.0 } },
+	};
+
 	/*AreaLight areaLight({ 0, 10, -2 }, { 1, 1, 1 }, { 0, -1, 0 }, { 0, 0, 1 });
 	vector<AreaLight> areaLights = { areaLight };*/
 
@@ -73,8 +73,6 @@ void renderScene()
 	cyPoint3d pointOnFocalPlane;
 	cyPoint3d primaryRay, secondaryRay;
 
-	double cp_x = 0, cp_y = 0, cp_z = 0, cp_r, cp_g, cp_b;
-
 	vector<Quadric> quadrics;
 	vector<cyPoint3d> N = { { 0, 0, -1 },{ -1, 0, 0 },{ 0, -1, 0 } };
 	vector<pair<double, cyPoint3d>> colors = { { 0.05, { 1, 1, 1 } }, { 0.5, _725E9C }, { 0.0, _725E9C }, { 0.0 ,{ 1, 1, 1 } } };
@@ -94,7 +92,7 @@ void renderScene()
 	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, {  -2.5, 0.8,  -2 }, { 1, 1, 1 }, N, colors, Tex_sphere_4, Null_image, {}, {}, 0.0));*/
 	
 	// Depth of field Configuration
-	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { -2.5, -0.5,  2.5 }, { 1, 1, 1 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 0.0));
+	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { -1.5, -0.5,  2.5 }, { 1, 1, 1 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 0.0));
 	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, {    0, -0.5,  0 }, { 1, 1, 1 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 0.0));
 	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, {  2.5, -0.5, -2.5 }, { 1, 1, 1 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 0.0));
 
@@ -107,14 +105,14 @@ void renderScene()
 
 	// Orbiting motion
 	/*quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 0, 0 }, { 1, 1, 1 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 0.0));
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 3 * cos(outCount), 0, 3 * sin(outCount) }, { 0.4, 0.4, 0.4 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 1.5));
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 2 * cos(outCount + 0.5), 2 * sin(outCount + 0.5) }, { 0.4, 0.4, 0.4 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 1.5));
+	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 3 * cos(animParam), 0, 3 * sin(animParam) }, { 0.4, 0.4, 0.4 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 1.5));
+	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 2 * cos(animParam + 0.5), 2 * sin(animParam + 0.5) }, { 0.4, 0.4, 0.4 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 1.5));
 	cyPoint3d a = cyPoint3d{ 0, 0, -1 }.GetNormalized();
 	cyPoint3d b = cyPoint3d{ 1, 1, 0 }.GetNormalized();
 	cyPoint3d c = {0, 0, 0};
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { c[0] + 2 * (cos(-outCount + 1) * a[0] + sin(-outCount + 1) * b[0]),
-													 c[1] + 2 * (cos(-outCount + 1) * a[1] + sin(-outCount + 1) * b[1]),
-													 c[2] + 2 * (cos(-outCount + 1) * a[2] + sin(-outCount + 1) * b[2]) },
+	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { c[0] + 2 * (cos(-animParam + 1) * a[0] + sin(-animParam + 1) * b[0]),
+													 c[1] + 2 * (cos(-animParam + 1) * a[1] + sin(-animParam + 1) * b[1]),
+													 c[2] + 2 * (cos(-animParam + 1) * a[2] + sin(-animParam + 1) * b[2]) },
 													{ 0.4, 0.4, 0.4 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 1.6));*/
 
 	// Stereo
@@ -126,21 +124,91 @@ void renderScene()
 	cyPoint3d a = cyPoint3d{ 0, 0, -1 }.GetNormalized();
 	cyPoint3d b = cyPoint3d{ 1, 1, 0 }.GetNormalized();
 	cyPoint3d center = { 0, 0, 0 };
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { center[0] + 3 * (cos(outCount + 1) * a[0] + sin(outCount + 1) * b[0]),
-		center[1] + 3 * (cos(outCount + 1) * a[1] + sin(outCount + 1) * b[1]),
-		center[2] + 3 * (cos(outCount + 1) * a[2] + sin(outCount + 1) * b[2]) },
+	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { center[0] + 3 * (cos(animParam + 1) * a[0] + sin(animParam + 1) * b[0]),
+		center[1] + 3 * (cos(animParam + 1) * a[1] + sin(animParam + 1) * b[1]),
+		center[2] + 3 * (cos(animParam + 1) * a[2] + sin(animParam + 1) * b[2]) },
 		{ 0.4, 0.4, 0.4 }, N, colors2, Tex_sphere_2, Null_image, {}, {}, 0.0, 0.0));*/
 
 	// Planes
 	//quadrics.push_back(planeFromPoints({ -10, -1.5, 10 }, { -10, -1.5, -10 }, { 10, -1.5, -10 }, palette[(10) % palette.size()], { 0, 0 }, { 0, 1 }, { 1, 1 }, Tex_plane, Null_image, 0.0));
 	//quadrics.push_back(planeFromPoints({ -10, -1.5, 10 }, { 10, -1.5, -10 }, { 10, -1.5, 10 }, palette[(10) % palette.size()], { 0, 0 }, { 1, 1 }, { 1, 0 }, Tex_plane, Null_image, 0.0));
-	//quadrics.push_back(planeFromPoints({ -10, -10, -5 }, { -10, 10, -5 }, { 10, 10, -5 }, palette[(11) % palette.size()], { 0, 0 }, { 0, 1 }, { 1, 1 }, Tex_plane_2, Null_image, 0.0));
-	//quadrics.push_back(planeFromPoints({ -10, -10, -5 }, { 10, 10, -5 }, { 10, -10, -5 }, palette[(11) % palette.size()], { 0, 0 }, { 1, 1 }, { 1, 0 }, Tex_plane_2, Null_image, 0.0));
+	//quadrics.push_back(planeFromPoints({ -10, -10, -5 }, { -10, 10, -5 }, { 10, 10, -5 }, palette[(11) % palette.size()], { 0, 0 }, { 0, 1 }, { 1, 1 }, Tex_plane, Null_image, 0.0));
+	//quadrics.push_back(planeFromPoints({ -10, -10, -5 }, { 10, 10, -5 }, { 10, -10, -5 }, palette[(11) % palette.size()], { 0, 0 }, { 1, 1 }, { 1, 0 }, Tex_plane, Null_image, 0.0));
 	//quadrics[0].refractive_index = 1 + rotY / 10.0;
 
 	// Animation
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 0, 0 }, { cos(outCount), cos(outCount), cos(outCount) }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 1.6));
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 0, 0 }, { sin(outCount), sin(outCount), sin(outCount) }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 2.0));
+	//cyPoint3d a, b, c, d;
+	//a = projectPoint({ -4, 0, 0 }, eye, 1);
+	//b = projectPoint({ -4, 2.5, 0 }, eye, 1);
+	//c = projectPoint({ 0, 2.5, 0 }, eye, 1);
+	//d = (a + b + c) / 3;
+	//rotVec(a, { 0, 0, d[0] }, animParam2 * 5);
+	//rotVec(b, { 0, 0, d[0] }, animParam2 * 5);
+	//rotVec(c, { 0, 0, d[0] }, animParam2 * 5);
+	////rotVec(a, up, rotY * 1);
+	////rotVec(b, up, rotY * 1);
+	////rotVec(c, up, rotY * 1);
+	////cout << rotY << endl;
+	//quadrics.push_back(planeFromPoints(a, b, c, palette[(11) % palette.size()], { 0, 0 }, { 0, 1 }, { 1, 1 }, Tex_plane, Null_image, 0.0));
+	//
+	//a = projectPoint({ -4, 0, 0 }, eye, 1.7);
+	//b = projectPoint({ 0, 2.5, 0 }, eye, 1.7);
+	//c = projectPoint({ 0, 0, 0 }, eye, 1.7);
+	//d = (a + b + c) / 3;
+	//rotVec(a, { 0, d[0], 0 }, -animParam2 * 5);
+	//rotVec(b, { 0, d[0], 0 }, -animParam2 * 5);
+	//rotVec(c, { 0, d[0], 0 }, -animParam2 * 5);
+	//quadrics.push_back(planeFromPoints(a, b, c, palette[(11) % palette.size()], { 0, 0 }, { 1, 1 }, { 1, 0 }, Tex_plane, Null_image, 0.0));
+
+	//a = projectPoint({ 0, 0, 0 }, eye, 1.2);
+	//b = projectPoint({ 0, 2.5, 0 }, eye, 1.2);
+	//c = projectPoint({ 4, 2.5, 0 }, eye, 1.2);
+	//d = (a + b + c) / 3;
+	//rotVec(a, { d[0], d[0], 0 }, animParam2 * 5);
+	//rotVec(b, { d[0], d[0], 0 }, animParam2 * 5);
+	//rotVec(c, { d[0], d[0], 0 }, animParam2 * 5);
+	//quadrics.push_back(planeFromPoints(a, b, c, palette[(11) % palette.size()], { 0, 0 }, { 0, 1 }, { 1, 1 }, Tex_plane, Null_image, 0.0));
+
+	//a = projectPoint({ 0, 0, 0 }, eye, 0.9);
+	//b = projectPoint({ 4, 2.5, 0 }, eye, 0.9);
+	//c = projectPoint({ 4, 0, 0 }, eye, 0.9);
+	//d = (a + b + c) / 3;
+	//rotVec(a, { d[0], 0, 0 }, -animParam2 * 5);
+	//rotVec(b, { d[0], 0, 0 }, -animParam2 * 5);
+	//rotVec(c, { d[0], 0, 0 }, -animParam2 * 5);
+	//quadrics.push_back(planeFromPoints(a, b, c, palette[(11) % palette.size()], { 0, 0 }, { 1, 1 }, { 1, 0 }, Tex_plane, Null_image, 0.0));
+
+	//a = projectPoint({ -1.25, -5, 0 }, eye, 1.8);
+	//b = projectPoint({ -1.25, 0, 0 }, eye, 1.8);
+	//c = projectPoint({ 1.25, 0, 0 }, eye, 1.8);
+	//d = (a + b + c) / 3;
+	//rotVec(a, { 0, d[0], d[0] }, animParam2 * 5);
+	//rotVec(b, { 0, d[0], d[0] }, animParam2 * 5);
+	//rotVec(c, { 0, d[0], d[0] }, animParam2 * 5);
+	//quadrics.push_back(planeFromPoints(a, b, c, palette[(11) % palette.size()], { 0, 0 }, { 0, 1 }, { 1, 1 }, Tex_plane, Null_image, 0.0));
+	//
+	//a = projectPoint({ -1.25, -5, 0 }, eye, 1.4);
+	//b = projectPoint({ 1.25, 0, 0 }, eye, 1.4);
+	//c = projectPoint({ 1.25, -5, 0 }, eye, 1.4);
+	//d = (a + b + c) / 3;
+	//rotVec(a, { 0, d[1], 0 }, -animParam2 * 5);
+	//rotVec(b, { 0, d[1], 0 }, -animParam2 * 5);
+	//rotVec(c, { 0, d[1], 0 }, -animParam2 * 5);
+	//quadrics.push_back(planeFromPoints(a, b, c, palette[(11) % palette.size()], { 0, 0 }, { 1, 1 }, { 1, 0 }, Tex_plane, Null_image, 0.0));
+
+	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 0, 2 }, { 1, 1, 1 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 0.0));
+	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 4 * cos(animParam), 0, 4 * sin(animParam) }, { 0.4, 0.4, 0.4 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 1.3));
+	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 4 * cos(animParam + 0.5), 4 * sin(animParam + 0.5) }, { 0.4, 0.4, 0.4 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 1.6));
+	//a = cyPoint3d{ 0, 0, -1 }.GetNormalized();
+	//b = cyPoint3d{ 1, 1, 0 }.GetNormalized();
+	//c = { 0, 0, 0 };
+	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { c[0] + 4 * (cos(-animParam + 1) * a[0] + sin(-animParam + 1) * b[0]),
+	//	c[1] + 4 * (cos(-animParam + 1) * a[1] + sin(-animParam + 1) * b[1]),
+	//	c[2] + 4 * (cos(-animParam + 1) * a[2] + sin(-animParam + 1) * b[2]) },
+	//	{ 0.4, 0.4, 0.4 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 1.9));
+
+	vector<pair<double, cyPoint3d>> colors3 = { { 0.1,{ 1, 1, 1 } },{ 0.5, {1, 1, 1} },{ 0.5, {1,1,1} },{ 0.0 ,{ 1, 1, 1 } } };
+	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 0, 2 }, { 1, 1, 1 }, N, colors3, Null_image, Null_image, {}, {}, 0.0, 0.0));
 
 #ifdef OBJFILE
 	objl::Loader Loader;
@@ -280,16 +348,18 @@ void renderScene()
 	cout << "\nRendering Complete\n\n";
 
 #ifdef OUTPUT_JPG
-	//string fname = OUTPUT_JPG + to_string(currRender) + "_" + to_string(outCount) + ".jpg";
-	string fname = OUTPUT_JPG + to_string(outCount) + ".jpg";
+	string fname = OUTPUT_JPG + to_string(animParam) + ".jpg";
 	Image :: writeImage(fname.c_str(), frameBuffer);
-	outCount += 0.05;
 #endif
 }
 
 void update()
 {
-	outCount += 0.05;
+	animParam += 0.05;
+	if (animParam > 2.5)
+		animParam2 += 0.1;
+	/*else
+		eye = cyPoint3d(0, 0, 4) - animParam * view;*/
 	glutPostRedisplay();
 }
 
