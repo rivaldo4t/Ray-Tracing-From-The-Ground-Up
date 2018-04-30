@@ -8,15 +8,17 @@
 #include "OBJ_Loader.h"
 using namespace std;
 
-//#define ANTI_ALIASED
-//#define OUTPUT_JPG "output/out"
-//#define OBJFILE "objects/dodec.obj"
+#define ANTI_ALIASED
+#define OUTPUT_JPG "output/out"
+//#define OBJFILE "objects/cube.obj"
 //#define DEPTH_OF_FIELD
 //#define MOTION_BLUR
-//#define CAM_PAINTING
-cyPoint3d eye(0, 0, 4);
+#define CAM_PAINTING
+
+cyPoint3d eye(0.2, 0, 6);
 cyPoint3d view(0, 0, -1);
 cyPoint3d up(0, 1, 0);
+
 void renderScene()
 {
 	cyPoint3d color, pix, camToPix;
@@ -37,21 +39,23 @@ void renderScene()
 	//rotVec(view, up, rotX);
 	//eye += rotY * view;
 	//animParam = animParam > 6.3 ? 0 : animParam;			//2*pie = 6.3
+	
+	//eye = {0, 0, -1 + animParam};
 
 	Camera cam = {eye, view, up, double(Xmax) / double(Ymax) * 10, 10, 6};
 
-	//vector<Light> lights = {	
-	//							{ { 0,  10, 0 },{ 0.5, 0.5, 0.5 } },
-	//							{ { 0,  0, 5 },{ 0.5, 0.5, 0.5 } },
-	//							{ { -10,  0,  5 },{ 0.5, 0.5, 0.5 } },
-	//							{{ 10,  0,  5 }, { 0.5, 0.5, 0.5 }},
-	//};
+	vector<Light> lights = {	
+								{ { 0, 10, 0 },{ 0.6, 0.6, 0.6 } },
+								//{ { 0, 0, 10 },{ 0.5, 0.5, 0.5 } },
+								{ { -6, 0, 6 },{ 0.2, 0.2, 0.2 } },
+								{ { 6, 0, 6 }, { 0.6, 0.6, 0.6 }},
+	};
 	
-	vector<Light> lights = {
-		{ { 10 * cos(animParam),  10 * sin(animParam), 0 },{ 0.0, 0.5, 0.5 } },
+	/*vector<Light> lights = {
+		{ { 10 * cos(animParam),  10 * sin(animParam), 0 },{ cos(animParam), sin(animParam), 0.5 } },
 		{ { -10 * cos(animParam),  0,  10 * sin(animParam) },{ 0.5, 0.0, 0.5 } },
 		{ { 0,  10 * cos(animParam),  10 * sin(animParam) },{ 0.5, 0.5, 0.0 } },
-	};
+	};*/
 
 	/*AreaLight areaLight({ 0, 10, -2 }, { 1, 1, 1 }, { 0, -1, 0 }, { 0, 0, 1 });
 	vector<AreaLight> areaLights = { areaLight };*/
@@ -63,7 +67,7 @@ void renderScene()
 #ifndef DEPTH_OF_FIELD
 	AreaCamera areaCam(eye, view, up);
 #else
-	AreaCamera areaCam(eye, view, up, 0.5, 0.5, 4, 4, 1, 1, 8);
+	AreaCamera areaCam(eye, view, up, 0.06, 0.06, 4, 4, 1, 1, 1.6 - 0 * 2);
 #endif
 
 	cyPoint3d eyePos;
@@ -116,18 +120,20 @@ void renderScene()
 													{ 0.4, 0.4, 0.4 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 1.6));*/
 
 	// Stereo
+	//// 1
 	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { -2.5, -0.5,  -2.5 }, { 1, 1, 1 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 0.0));
 	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, -0.5,  0 }, { 1, 1, 1 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 0.0));
 	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 2.5, -0.5, -2.5 }, { 1, 1, 1 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 0.0));
-
-	/*quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 0, 0 }, { 2, 2, 2 }, N, colors2, Tex_sphere, Null_image, {}, {}, 0.0, 0.0));
-	cyPoint3d a = cyPoint3d{ 0, 0, -1 }.GetNormalized();
-	cyPoint3d b = cyPoint3d{ 1, 1, 0 }.GetNormalized();
-	cyPoint3d center = { 0, 0, 0 };
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { center[0] + 3 * (cos(animParam + 1) * a[0] + sin(animParam + 1) * b[0]),
-		center[1] + 3 * (cos(animParam + 1) * a[1] + sin(animParam + 1) * b[1]),
-		center[2] + 3 * (cos(animParam + 1) * a[2] + sin(animParam + 1) * b[2]) },
-		{ 0.4, 0.4, 0.4 }, N, colors2, Tex_sphere_2, Null_image, {}, {}, 0.0, 0.0));*/
+	//
+	//// 2
+	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 0, 0 }, { 2, 2, 2 }, N, colors2, Tex_sphere, Null_image, {}, {}, 0.0, 0.0));
+	//cyPoint3d a = cyPoint3d{ 0, 0, -1 }.GetNormalized();
+	//cyPoint3d b = cyPoint3d{ 1, 1, 0 }.GetNormalized();
+	//cyPoint3d center = { 0, 0, 0 };
+	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { center[0] + 3 * (cos(animParam + 1) * a[0] + sin(animParam + 1) * b[0]),
+	//	center[1] + 3 * (cos(animParam + 1) * a[1] + sin(animParam + 1) * b[1]),
+	//	center[2] + 3 * (cos(animParam + 1) * a[2] + sin(animParam + 1) * b[2]) },
+	//	{ 0.4, 0.4, 0.4 }, N, colors2, Tex_sphere_2, Null_image, {}, {}, 0.0, 0.0));
 
 	// Planes
 	//quadrics.push_back(planeFromPoints({ -10, -1.5, 10 }, { -10, -1.5, -10 }, { 10, -1.5, -10 }, palette[(10) % palette.size()], { 0, 0 }, { 0, 1 }, { 1, 1 }, Tex_plane, Null_image, 0.0));
@@ -207,8 +213,24 @@ void renderScene()
 	//	c[2] + 4 * (cos(-animParam + 1) * a[2] + sin(-animParam + 1) * b[2]) },
 	//	{ 0.4, 0.4, 0.4 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 1.9));
 
-	vector<pair<double, cyPoint3d>> colors3 = { { 0.1,{ 1, 1, 1 } },{ 0.5, {1, 1, 1} },{ 0.5, {1,1,1} },{ 0.0 ,{ 1, 1, 1 } } };
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 0, 2 }, { 1, 1, 1 }, N, colors3, Null_image, Null_image, {}, {}, 0.0, 0.0));
+	// planets on plane & stereo
+	vector<pair<double, cyPoint3d>> colors3 = { { 0.05,{ 1, 1, 1 } },{ 0.5, {0.7, 0.7, 0.7} },{ 0.0, {1,1,1} },{ 0.0 ,{ 1, 1, 1 } } };
+	vector<cyPoint3d> N2 = { { 0, 0, -1 },{ -1, 0, 0 },{ 0, -1, 0 } };
+	vector<cyPoint3d> N3 = { { 0, 0, -1 },{ -1, 0, 0 },{ 0, -1, 0 } };
+	rotVec(N[0], N[2], -animParam * 40);
+	rotVec(N[1], N[2], -animParam * 40);
+	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 0, 2}, { 0.5, 0.5, 0.5 }, N, colors3, Tex_sphere, Null_image, {}, {}, 0, 0));
+	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0.5 * cos(animParam), 0, 0.5 * sin(animParam) }, { 1, 1, 1 }, N, colors3, Tex_sphere, Null_image, {}, {}, 0, 0));
+	rotVec(N2[0], N2[2], -animParam * 80);
+	rotVec(N2[1], N2[2], -animParam * 80);
+	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { -2, 0, 0}, { 0.5, 0.5, 0.5 }, N2, colors3, Tex_sphere_2, Null_image, {}, {}, 0, 0));
+	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 2 * cos(animParam), 2 * sin(animParam), 0 }, { 0.25, 0.25, 0.25 }, N2, colors3, Tex_sphere_2, Null_image, {}, {}, 0, 0));
+	rotVec(N3[0], N3[2], animParam * 60);
+	rotVec(N3[1], N3[2], animParam * 60);
+	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 3, 0, -2 }, { 1, 1, 1 }, N3, colors3, Tex_sphere_3, Null_image, {}, {}, 0, 0));
+	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 2 * cos(animParam), 2 * sin(animParam) }, { 0.25, 0.25, 0.25 }, N3, colors3, Tex_sphere_3, Null_image, {}, {}, 0, 0));
+	//quadrics.push_back(planeFromPoints({ -10, -0.5, 10 }, { -10, -0.5, -10 }, { 10, -0.5, -10 }, palette[(2) % palette.size()], { 0, 0 }, { 0, 1 }, { 1, 1 }, Tex_plane, Null_image, 0.0));
+	//quadrics.push_back(planeFromPoints({ -10, -0.5, 10 }, { 10, -0.5, -10 }, { 10, -0.5, 10 }, palette[(2) % palette.size()], { 0, 0 }, { 1, 1 }, { 1, 0 }, Tex_plane, Null_image, 0.0));
 
 #ifdef OBJFILE
 	objl::Loader Loader;
@@ -230,7 +252,10 @@ void renderScene()
 				cyPoint3d c = { curMesh.MeshMaterial.Kd.X, curMesh.MeshMaterial.Kd.Y, curMesh.MeshMaterial.Kd.Z };
 				c = c.IsZero() ? palette[(10) % palette.size()] : c;
 
-				quadrics.push_back(planeFromPoints(q1 / 0.5, q2 / 0.5, q3 / 0.5, c, t1, t2, t3, Tex_plane_2, Null_image, 1.0));
+				rotVec(q1, up, -animParam2 * 50);
+				rotVec(q2, up, -animParam2 * 50);
+				rotVec(q3, up, -animParam2 * 50);
+				quadrics.push_back(planeFromPoints(q1 / 0.5, q2 / 0.5, q3 / 0.5, c, t1, t2, t3, Tex_plane_2, Null_image, 0.5, 1.8));
 			}
 		}
 	}
@@ -257,8 +282,8 @@ void renderScene()
 #else
 			rx = (rand() % 10) / 10.0;
 			ry = (rand() % 10) / 10.0;
-			subPixX = 4;
-			subPixY = 4;
+			subPixX = 3;
+			subPixY = 3;
 #endif
 
 			double weighted = 1.0 / (subPixX * subPixY);
@@ -312,15 +337,15 @@ void renderScene()
 
 					// camera painting
 #ifdef CAM_PAINTING
-					cp_r = camera_painting.texture[i][j][0];
-					cp_g = camera_painting.texture[i][j][1];
-					cp_b = camera_painting.texture[i][j][2];
+					cp_r = camera_painting.texture[j][i][0];
+					cp_g = camera_painting.texture[j][i][1];
+					cp_b = camera_painting.texture[j][i][2];
 
-					cp_x = outCount;
-					cp_y = outCount;
-					cp_z = outCount;
+					cp_x = animParam2;
+					cp_y = animParam2;
+					cp_z = animParam2;
 
-					eye = cyPoint3d{ 0, 2, 5 } + cp_x * cp_r * cam.n0 + cp_y * cp_g * cam.n1 + cp_z * cp_b * cam.n2;
+					eye = cyPoint3d{ 0.2, 0, 6 } + cp_x * cp_r * cam.n0 + cp_y * cp_g * cam.n1 + cp_z * cp_b * cam.n2;
 					areaCam = { eye, view, up };
 #endif
 
@@ -356,8 +381,8 @@ void renderScene()
 void update()
 {
 	animParam += 0.05;
-	if (animParam > 2.5)
-		animParam2 += 0.1;
+	if (animParam > 1)
+		animParam2 += 0.075;
 	/*else
 		eye = cyPoint3d(0, 0, 4) - animParam * view;*/
 	glutPostRedisplay();

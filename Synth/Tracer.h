@@ -16,21 +16,21 @@ using namespace std;
 //#define GLOSSY
 //#define TRANSLUCENT
 
-Image Tex_env("textures/AdobeStock_space_1.jpeg");
-Image Tex_plane("textures/AdobeStock_stone.jpeg");
-//Image Tex_plane_2("textures/stone_floor.jpg");
-//Image Tex_sphere("textures/AdobeStock_space_3.1.jpeg");
-//Image Tex_sphere_2("textures/AdobeStock_space_2.1.jpeg");
-//Image Tex_sphere_3("textures/nebula.jpg");
+Image Null_image;
+Image Tex_env("textures/AdobeStock_space_3.2.jpeg");
+//Image Tex_plane("textures/AdobeStock_stone_2.jpeg");
+//Image Tex_plane_2("textures/tess3_sq.png");
+Image Tex_sphere("textures/AdobeStock_space_1.1.jpeg");
+Image Tex_sphere_2("textures/AdobeStock_space_2.2.jpeg");
+Image Tex_sphere_3("textures/nebula.jpg");
 //Image Tex_sphere_4("textures/jupiter.jpg");
 //Image Norm_sphere("textures/map.jpg");
 //Image Norm_plane("textures/stone.jpg");
-//Image camera_painting("textures/abs6_720.jpg");
-Image Null_image;
+Image camera_painting("textures/abs9_960x1080.jpg");
 
 double rotX = 0.0, rotY = 0.0;
-//const int Xmax = 1920, Ymax = 1080;
-const int Xmax = 200, Ymax = 200;
+const int Xmax = 960, Ymax = 1080;
+//const int Xmax = 600, Ymax = 600;
 double farPlane = 100;
 float frameBuffer[Ymax][Xmax][3] = { 0 };
 AreaLight areaLight({ 0, 10, -2 }, { 1, 1, 1 }, { 0, -1, 0 }, { 0, 0, 1 });

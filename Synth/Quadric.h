@@ -47,6 +47,9 @@ public:
 		textureImage(_I), normalImage(_I2), points(_points), texpoints(_texpoints),
 		reflectivity(_ref), refractive_index(_ior)
 		{
+			N[0].Normalize();
+			N[1].Normalize();
+			N[2].Normalize();
 			//plane
 			if (ai2.IsZero())
 				type = 0;
