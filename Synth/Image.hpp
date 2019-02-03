@@ -12,5 +12,5 @@ public:
 
 	Image();
 	Image(const char* path);
-	static void writeImage(const char* path, float(*frameBuffer)[960][3]);
+	static void writeImage(const char* path, float(*frameBuffer)[512][3]);
 };
