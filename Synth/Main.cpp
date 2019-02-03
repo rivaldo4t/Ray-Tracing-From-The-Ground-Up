@@ -15,7 +15,6 @@ cyPoint3d up(0, 1, 0);
 
 void renderScene()
 {
-#if 0
 	cyPoint3d color, pix, camToPix;
 	double X, Y, x, y, rx, ry;
 	int subPixX, subPixY;
@@ -127,7 +126,7 @@ void renderScene()
 #endif
 
 									secondaryRay = (pointOnFocalPlane - eyePos).GetNormalized();
-									//color += castRays(eyePos, secondaryRay, quadrics, lights, infSphere, 1) * weighted * psubweighted * pmaxweighted;
+									color += castRays(eyePos, secondaryRay, quadrics, lights, infSphere, 1) * weighted * psubweighted * pmaxweighted;
 								}
 							}
 						}
@@ -175,12 +174,10 @@ void renderScene()
 	string fname = OUTPUT_JPG + to_string(animParam) + ".jpg";
 	Image :: writeImage(fname.c_str(), frameBuffer);
 #endif
-#endif
 }
 
 void keyRot(int key, int x, int y)
 {
-#if 0
 	switch (key)
 	{
 	case GLUT_KEY_UP:
@@ -207,7 +204,6 @@ void keyRot(int key, int x, int y)
 		glutPostRedisplay();
 		break;
 	}
-#endif
 }
 
 void quit(unsigned char key, int x, int y)
@@ -217,14 +213,12 @@ void quit(unsigned char key, int x, int y)
 
 void update()
 {
-#if 0
 	animParam += 0.05;
 	if (animParam > 1)
 		animParam2 += 0.075;
 	/*else
 		eye = cyPoint3d(0, 0, 4) - animParam * view;*/
 	glutPostRedisplay();
-#endif
 }
 
 int main(int argc, char** argv)

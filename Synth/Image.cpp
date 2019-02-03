@@ -1,5 +1,11 @@
 #include "Image.hpp"
 
+// use #define in one of the cpp files and then include headers without #define in others
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image.h"
+#include "stb_image_write.h"
+
 Image :: Image() 
 { 
 	data = nullptr; 

@@ -51,6 +51,9 @@
     <ClInclude Include="Camera.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="cyCore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Utility.cpp">

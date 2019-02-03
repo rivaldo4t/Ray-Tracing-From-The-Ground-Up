@@ -7,15 +7,15 @@
 #include <algorithm>
 
 #include "cyPoint.h"
-//#include "cyCore.h"
-//#include "Quadric.hpp"
+#include "cyCore.h"
+#include "Quadric.hpp"
 #include "Light.hpp"
 #include "Image.hpp"
-//#include "Camera.hpp"
+#include "Camera.hpp"
 #include "Utility.hpp"
+#include "Tracer.hpp"
 using namespace std;
 
-#if 0
 Image Null_image;
 Image Tex_env("textures/AdobeStock_space_3.2.jpeg");
 //Image Tex_plane("textures/AdobeStock_stone_2.jpeg");
@@ -27,7 +27,6 @@ Image Tex_sphere_3("textures/nebula.jpg");
 //Image Norm_sphere("textures/map.jpg");
 //Image Norm_plane("textures/stone.jpg");
 Image camera_painting("textures/abs9_960x1080.jpg");
-#endif
 
 double rotX = 0.0, rotY = 0.0;
 const int Xmax = 960, Ymax = 1080;

@@ -4,7 +4,7 @@
 //#define AREALIGHT
 //#define GLOSSY
 //#define TRANSLUCENT
-#if 0
+
 bool shadowRay(int& objIndex, cyPoint3d& hitPoint, cyPoint3d& hitPointToLight, double& pointToLightDist, vector<Quadric>& quadrics)
 {
 	for (unsigned int i = 0; i < quadrics.size(); i++)
@@ -271,4 +271,3 @@ cyPoint3d castRays(cyPoint3d pos, cyPoint3d dir, vector<Quadric>& quadrics, vect
 	}
 	return color;
 }
-#endif

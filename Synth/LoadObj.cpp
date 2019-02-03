@@ -1,6 +1,5 @@
 #include "LoadObj.hpp"
 
-#if 0
 void LoadObjFile(std::string filename, vector<Quadric>& quadrics)
 {
 	objl::Loader Loader;
@@ -25,9 +24,8 @@ void LoadObjFile(std::string filename, vector<Quadric>& quadrics)
 				//rotVec(q1, up, -animParam2 * 50);
 				//rotVec(q2, up, -animParam2 * 50);
 				//rotVec(q3, up, -animParam2 * 50);
-				quadrics.push_back(planeFromPoints(q1 / 0.5, q2 / 0.5, q3 / 0.5, c, t1, t2, t3, Tex_plane_2, Null_image, 0.5, 1.8));
+				quadrics.push_back(planeFromPoints(q1 / 0.5, q2 / 0.5, q3 / 0.5, c, t1, t2, t3, Image(), Image(), 0.5, 1.8));
 			}
 		}
 	}
 }
-#endif
