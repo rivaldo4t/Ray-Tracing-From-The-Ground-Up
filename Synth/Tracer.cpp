@@ -1,405 +1,274 @@
-﻿#include <GL/glut.h>
-#include <vector>
-#include <string>
-#include <iostream>
-#include <math.h>
-#include <algorithm>
-#include "Tracer.h"
-#include "OBJ_Loader.h"
-using namespace std;
-
-#define ANTI_ALIASED
-#define OUTPUT_JPG "output/out"
-//#define OBJFILE "objects/cube.obj"
-//#define DEPTH_OF_FIELD
-//#define MOTION_BLUR
-#define CAM_PAINTING
-
-cyPoint3d eye(0.2, 0, 6);
-cyPoint3d view(0, 0, -1);
-cyPoint3d up(0, 1, 0);
-
-void renderScene()
+#include "Tracer.hpp"
+//#define PROJTEX
+//#define SUBSURFACESSCATTERING
+//#define AREALIGHT
+//#define GLOSSY
+//#define TRANSLUCENT
+#if 0
+bool shadowRay(int& objIndex, cyPoint3d& hitPoint, cyPoint3d& hitPointToLight, double& pointToLightDist, vector<Quadric>& quadrics)
 {
-	cyPoint3d color, pix, camToPix;
-	double X, Y, x, y, rx, ry;
-	int subPixX, subPixY;
-	
-	//cyPoint3d up(0, 1, 0);
-	
-	//cyPoint3d eye(0, 0, 10);
-	// Stereo configuration
-	//eye = int(outCount*20) % 2 == 0 ? cyPoint3d{ 0.2, 0, 5 } : cyPoint3d{ -0.2, 0, 5 };
-	//eye = { 0.3, 0, 5 };
-	
-	//cyPoint3d view(0, 0, -1);
-	//point view at (0, 0, 0)
-	//view = (cyPoint3d(0, 0, 0) - eye).GetNormalized();
-	
-	//rotVec(view, up, rotX);
-	//eye += rotY * view;
-	//animParam = animParam > 6.3 ? 0 : animParam;			//2*pie = 6.3
-	
-	//eye = {0, 0, -1 + animParam};
-
-	Camera cam = {eye, view, up, double(Xmax) / double(Ymax) * 10, 10, 6};
-
-	vector<Light> lights = {	
-								{ { 0, 10, 0 },{ 0.6, 0.6, 0.6 } },
-								//{ { 0, 0, 10 },{ 0.5, 0.5, 0.5 } },
-								{ { -6, 0, 6 },{ 0.2, 0.2, 0.2 } },
-								{ { 6, 0, 6 }, { 0.6, 0.6, 0.6 }},
-	};
-	
-	/*vector<Light> lights = {
-		{ { 10 * cos(animParam),  10 * sin(animParam), 0 },{ cos(animParam), sin(animParam), 0.5 } },
-		{ { -10 * cos(animParam),  0,  10 * sin(animParam) },{ 0.5, 0.0, 0.5 } },
-		{ { 0,  10 * cos(animParam),  10 * sin(animParam) },{ 0.5, 0.5, 0.0 } },
-	};*/
-
-	/*AreaLight areaLight({ 0, 10, -2 }, { 1, 1, 1 }, { 0, -1, 0 }, { 0, 0, 1 });
-	vector<AreaLight> areaLights = { areaLight };*/
-
-	//Camera proj = { { 0, 4, 10 },{ 0, 0, -1 },{ 0, 1, 0 }, 9, 9, 10 };
-	Camera proj = { { 0, 20, -4 },{ 0, -1, 0 },{ 0, 0, -1 }, 9, 9, 10 };
-	cyPoint3d solidColor;
-
-#ifndef DEPTH_OF_FIELD
-	AreaCamera areaCam(eye, view, up);
-#else
-	AreaCamera areaCam(eye, view, up, 0.06, 0.06, 4, 4, 1, 1, 1.6 - 0 * 2);
-#endif
-
-	cyPoint3d eyePos;
-	double pX, pY, px, py, prx, pry;
-	double psubweighted = 1.0 / (areaCam.pxsub * areaCam.pysub);
-	double pmaxweighted = 1.0 / (areaCam.pxmax * areaCam.pymax);
-	cyPoint3d pointOnFocalPlane;
-	cyPoint3d primaryRay, secondaryRay;
-
-	vector<Quadric> quadrics;
-	vector<cyPoint3d> N = { { 0, 0, -1 },{ -1, 0, 0 },{ 0, -1, 0 } };
-	vector<pair<double, cyPoint3d>> colors = { { 0.05, { 1, 1, 1 } }, { 0.5, _725E9C }, { 0.0, _725E9C }, { 0.0 ,{ 1, 1, 1 } } };
-	vector<pair<double, cyPoint3d>> colors2 = { { 0.05,{ 1, 1, 1 } },{ 0.5, palette[(10) % palette.size()] },{ 0.0, _725E9C },{ 0.0 ,{ 1, 1, 1 } } };
-	
-	Quadric infSphere({ 1, 1, 1 }, 0, -1, { 0, 0, 0 }, { 1, 1, 1 }, N, colors, Tex_env, Null_image);
-
-	// Camera Painting
-	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 0, 0 }, { 1, 1, 1 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 0.0));
-
-	// Multiple Objects setup; enable dodec OBJ in addition to this
-	/*quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { -4, -0.5, 0 }, { 2, 2, 2 }, N, colors, Null_image, Null_image, {}, {}, 1.0, 0.0));
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, {  2.5, -0.5,  -1.5 }, { 1, 1, 1 }, N, colors, Tex_sphere, Null_image, {}, {}, 0.0, 0.0));
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, {  2.5, -0.5,  1}, { 1, 1, 1 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 0.0));
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, {  -1.5, -0.5,  2.5 }, { 1, 1, 1 }, N, colors, Tex_sphere_3, Null_image, {}, {}, 0.0));
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0.0, 1.5,  -2.0 }, { 1, 1, 1 }, N, colors, Tex_sphere_2, Null_image, {}, {}, 0.0));
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, {  -2.5, 0.8,  -2 }, { 1, 1, 1 }, N, colors, Tex_sphere_4, Null_image, {}, {}, 0.0));*/
-	
-	// Depth of field Configuration
-	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { -1.5, -0.5,  2.5 }, { 1, 1, 1 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 0.0));
-	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, {    0, -0.5,  0 }, { 1, 1, 1 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 0.0));
-	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, {  2.5, -0.5, -2.5 }, { 1, 1, 1 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 0.0));
-
-	// Motion in a grid
-	/*quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0 + rotX, -0.5,  0 + rotY }, { 1, 1, 1 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 0.0));
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { -1.7, -0.5,  -1.7 }, { 0.6, 0.6, 0.6 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 0.0));
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 1.7, -0.5,  1.7 },  { 0.6, 0.6, 0.6 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 0.0));
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 1.7, -0.5,  -1.7 }, { 0.6, 0.6, 0.6 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 0.0));
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { -1.7, -0.5,  1.7 }, { 0.6, 0.6, 0.6 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 0.0));*/
-
-	// Orbiting motion
-	/*quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 0, 0 }, { 1, 1, 1 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 0.0));
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 3 * cos(animParam), 0, 3 * sin(animParam) }, { 0.4, 0.4, 0.4 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 1.5));
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 2 * cos(animParam + 0.5), 2 * sin(animParam + 0.5) }, { 0.4, 0.4, 0.4 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 1.5));
-	cyPoint3d a = cyPoint3d{ 0, 0, -1 }.GetNormalized();
-	cyPoint3d b = cyPoint3d{ 1, 1, 0 }.GetNormalized();
-	cyPoint3d c = {0, 0, 0};
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { c[0] + 2 * (cos(-animParam + 1) * a[0] + sin(-animParam + 1) * b[0]),
-													 c[1] + 2 * (cos(-animParam + 1) * a[1] + sin(-animParam + 1) * b[1]),
-													 c[2] + 2 * (cos(-animParam + 1) * a[2] + sin(-animParam + 1) * b[2]) },
-													{ 0.4, 0.4, 0.4 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 1.6));*/
-
-	// Stereo
-	//// 1
-	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { -2.5, -0.5,  -2.5 }, { 1, 1, 1 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 0.0));
-	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, -0.5,  0 }, { 1, 1, 1 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 0.0));
-	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 2.5, -0.5, -2.5 }, { 1, 1, 1 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 0.0));
-	//
-	//// 2
-	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 0, 0 }, { 2, 2, 2 }, N, colors2, Tex_sphere, Null_image, {}, {}, 0.0, 0.0));
-	//cyPoint3d a = cyPoint3d{ 0, 0, -1 }.GetNormalized();
-	//cyPoint3d b = cyPoint3d{ 1, 1, 0 }.GetNormalized();
-	//cyPoint3d center = { 0, 0, 0 };
-	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { center[0] + 3 * (cos(animParam + 1) * a[0] + sin(animParam + 1) * b[0]),
-	//	center[1] + 3 * (cos(animParam + 1) * a[1] + sin(animParam + 1) * b[1]),
-	//	center[2] + 3 * (cos(animParam + 1) * a[2] + sin(animParam + 1) * b[2]) },
-	//	{ 0.4, 0.4, 0.4 }, N, colors2, Tex_sphere_2, Null_image, {}, {}, 0.0, 0.0));
-
-	// Planes
-	//quadrics.push_back(planeFromPoints({ -10, -1.5, 10 }, { -10, -1.5, -10 }, { 10, -1.5, -10 }, palette[(10) % palette.size()], { 0, 0 }, { 0, 1 }, { 1, 1 }, Tex_plane, Null_image, 0.0));
-	//quadrics.push_back(planeFromPoints({ -10, -1.5, 10 }, { 10, -1.5, -10 }, { 10, -1.5, 10 }, palette[(10) % palette.size()], { 0, 0 }, { 1, 1 }, { 1, 0 }, Tex_plane, Null_image, 0.0));
-	//quadrics.push_back(planeFromPoints({ -10, -10, -5 }, { -10, 10, -5 }, { 10, 10, -5 }, palette[(11) % palette.size()], { 0, 0 }, { 0, 1 }, { 1, 1 }, Tex_plane, Null_image, 0.0));
-	//quadrics.push_back(planeFromPoints({ -10, -10, -5 }, { 10, 10, -5 }, { 10, -10, -5 }, palette[(11) % palette.size()], { 0, 0 }, { 1, 1 }, { 1, 0 }, Tex_plane, Null_image, 0.0));
-	//quadrics[0].refractive_index = 1 + rotY / 10.0;
-
-	// Animation
-	//cyPoint3d a, b, c, d;
-	//a = projectPoint({ -4, 0, 0 }, eye, 1);
-	//b = projectPoint({ -4, 2.5, 0 }, eye, 1);
-	//c = projectPoint({ 0, 2.5, 0 }, eye, 1);
-	//d = (a + b + c) / 3;
-	//rotVec(a, { 0, 0, d[0] }, animParam2 * 5);
-	//rotVec(b, { 0, 0, d[0] }, animParam2 * 5);
-	//rotVec(c, { 0, 0, d[0] }, animParam2 * 5);
-	////rotVec(a, up, rotY * 1);
-	////rotVec(b, up, rotY * 1);
-	////rotVec(c, up, rotY * 1);
-	////cout << rotY << endl;
-	//quadrics.push_back(planeFromPoints(a, b, c, palette[(11) % palette.size()], { 0, 0 }, { 0, 1 }, { 1, 1 }, Tex_plane, Null_image, 0.0));
-	//
-	//a = projectPoint({ -4, 0, 0 }, eye, 1.7);
-	//b = projectPoint({ 0, 2.5, 0 }, eye, 1.7);
-	//c = projectPoint({ 0, 0, 0 }, eye, 1.7);
-	//d = (a + b + c) / 3;
-	//rotVec(a, { 0, d[0], 0 }, -animParam2 * 5);
-	//rotVec(b, { 0, d[0], 0 }, -animParam2 * 5);
-	//rotVec(c, { 0, d[0], 0 }, -animParam2 * 5);
-	//quadrics.push_back(planeFromPoints(a, b, c, palette[(11) % palette.size()], { 0, 0 }, { 1, 1 }, { 1, 0 }, Tex_plane, Null_image, 0.0));
-
-	//a = projectPoint({ 0, 0, 0 }, eye, 1.2);
-	//b = projectPoint({ 0, 2.5, 0 }, eye, 1.2);
-	//c = projectPoint({ 4, 2.5, 0 }, eye, 1.2);
-	//d = (a + b + c) / 3;
-	//rotVec(a, { d[0], d[0], 0 }, animParam2 * 5);
-	//rotVec(b, { d[0], d[0], 0 }, animParam2 * 5);
-	//rotVec(c, { d[0], d[0], 0 }, animParam2 * 5);
-	//quadrics.push_back(planeFromPoints(a, b, c, palette[(11) % palette.size()], { 0, 0 }, { 0, 1 }, { 1, 1 }, Tex_plane, Null_image, 0.0));
-
-	//a = projectPoint({ 0, 0, 0 }, eye, 0.9);
-	//b = projectPoint({ 4, 2.5, 0 }, eye, 0.9);
-	//c = projectPoint({ 4, 0, 0 }, eye, 0.9);
-	//d = (a + b + c) / 3;
-	//rotVec(a, { d[0], 0, 0 }, -animParam2 * 5);
-	//rotVec(b, { d[0], 0, 0 }, -animParam2 * 5);
-	//rotVec(c, { d[0], 0, 0 }, -animParam2 * 5);
-	//quadrics.push_back(planeFromPoints(a, b, c, palette[(11) % palette.size()], { 0, 0 }, { 1, 1 }, { 1, 0 }, Tex_plane, Null_image, 0.0));
-
-	//a = projectPoint({ -1.25, -5, 0 }, eye, 1.8);
-	//b = projectPoint({ -1.25, 0, 0 }, eye, 1.8);
-	//c = projectPoint({ 1.25, 0, 0 }, eye, 1.8);
-	//d = (a + b + c) / 3;
-	//rotVec(a, { 0, d[0], d[0] }, animParam2 * 5);
-	//rotVec(b, { 0, d[0], d[0] }, animParam2 * 5);
-	//rotVec(c, { 0, d[0], d[0] }, animParam2 * 5);
-	//quadrics.push_back(planeFromPoints(a, b, c, palette[(11) % palette.size()], { 0, 0 }, { 0, 1 }, { 1, 1 }, Tex_plane, Null_image, 0.0));
-	//
-	//a = projectPoint({ -1.25, -5, 0 }, eye, 1.4);
-	//b = projectPoint({ 1.25, 0, 0 }, eye, 1.4);
-	//c = projectPoint({ 1.25, -5, 0 }, eye, 1.4);
-	//d = (a + b + c) / 3;
-	//rotVec(a, { 0, d[1], 0 }, -animParam2 * 5);
-	//rotVec(b, { 0, d[1], 0 }, -animParam2 * 5);
-	//rotVec(c, { 0, d[1], 0 }, -animParam2 * 5);
-	//quadrics.push_back(planeFromPoints(a, b, c, palette[(11) % palette.size()], { 0, 0 }, { 1, 1 }, { 1, 0 }, Tex_plane, Null_image, 0.0));
-
-	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 0, 2 }, { 1, 1, 1 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 0.0));
-	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 4 * cos(animParam), 0, 4 * sin(animParam) }, { 0.4, 0.4, 0.4 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 1.3));
-	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 4 * cos(animParam + 0.5), 4 * sin(animParam + 0.5) }, { 0.4, 0.4, 0.4 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 1.6));
-	//a = cyPoint3d{ 0, 0, -1 }.GetNormalized();
-	//b = cyPoint3d{ 1, 1, 0 }.GetNormalized();
-	//c = { 0, 0, 0 };
-	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { c[0] + 4 * (cos(-animParam + 1) * a[0] + sin(-animParam + 1) * b[0]),
-	//	c[1] + 4 * (cos(-animParam + 1) * a[1] + sin(-animParam + 1) * b[1]),
-	//	c[2] + 4 * (cos(-animParam + 1) * a[2] + sin(-animParam + 1) * b[2]) },
-	//	{ 0.4, 0.4, 0.4 }, N, colors2, Null_image, Null_image, {}, {}, 1.0, 1.9));
-
-	// planets on plane & stereo
-	vector<pair<double, cyPoint3d>> colors3 = { { 0.05,{ 1, 1, 1 } },{ 0.5, {0.7, 0.7, 0.7} },{ 0.0, {1,1,1} },{ 0.0 ,{ 1, 1, 1 } } };
-	vector<cyPoint3d> N2 = { { 0, 0, -1 },{ -1, 0, 0 },{ 0, -1, 0 } };
-	vector<cyPoint3d> N3 = { { 0, 0, -1 },{ -1, 0, 0 },{ 0, -1, 0 } };
-	rotVec(N[0], N[2], -animParam * 40);
-	rotVec(N[1], N[2], -animParam * 40);
-	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 0, 2}, { 0.5, 0.5, 0.5 }, N, colors3, Tex_sphere, Null_image, {}, {}, 0, 0));
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0.5 * cos(animParam), 0, 0.5 * sin(animParam) }, { 1, 1, 1 }, N, colors3, Tex_sphere, Null_image, {}, {}, 0, 0));
-	rotVec(N2[0], N2[2], -animParam * 80);
-	rotVec(N2[1], N2[2], -animParam * 80);
-	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { -2, 0, 0}, { 0.5, 0.5, 0.5 }, N2, colors3, Tex_sphere_2, Null_image, {}, {}, 0, 0));
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 2 * cos(animParam), 2 * sin(animParam), 0 }, { 0.25, 0.25, 0.25 }, N2, colors3, Tex_sphere_2, Null_image, {}, {}, 0, 0));
-	rotVec(N3[0], N3[2], animParam * 60);
-	rotVec(N3[1], N3[2], animParam * 60);
-	//quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 3, 0, -2 }, { 1, 1, 1 }, N3, colors3, Tex_sphere_3, Null_image, {}, {}, 0, 0));
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 2 * cos(animParam), 2 * sin(animParam) }, { 0.25, 0.25, 0.25 }, N3, colors3, Tex_sphere_3, Null_image, {}, {}, 0, 0));
-	//quadrics.push_back(planeFromPoints({ -10, -0.5, 10 }, { -10, -0.5, -10 }, { 10, -0.5, -10 }, palette[(2) % palette.size()], { 0, 0 }, { 0, 1 }, { 1, 1 }, Tex_plane, Null_image, 0.0));
-	//quadrics.push_back(planeFromPoints({ -10, -0.5, 10 }, { 10, -0.5, -10 }, { 10, -0.5, 10 }, palette[(2) % palette.size()], { 0, 0 }, { 1, 1 }, { 1, 0 }, Tex_plane, Null_image, 0.0));
-
-#ifdef OBJFILE
-	objl::Loader Loader;
-	bool loadout = Loader.LoadFile(OBJFILE);
-	if (loadout)
+	for (unsigned int i = 0; i < quadrics.size(); i++)
 	{
-		for (unsigned int i = 0; i < Loader.LoadedMeshes.size(); i++)
-		{
-			objl::Mesh curMesh = Loader.LoadedMeshes[i];
-			
-			for (unsigned int j = 0; j < curMesh.Indices.size(); j += 3)
-			{
-				cyPoint3d q1 = { curMesh.Vertices[curMesh.Indices[j]].Position.X, curMesh.Vertices[curMesh.Indices[j]].Position.Y, curMesh.Vertices[curMesh.Indices[j]].Position.Z };
-				cyPoint3d q2 = { curMesh.Vertices[curMesh.Indices[j + 1]].Position.X, curMesh.Vertices[curMesh.Indices[j + 1]].Position.Y, curMesh.Vertices[curMesh.Indices[j + 1]].Position.Z };
-				cyPoint3d q3 = { curMesh.Vertices[curMesh.Indices[j + 2]].Position.X, curMesh.Vertices[curMesh.Indices[j + 2]].Position.Y, curMesh.Vertices[curMesh.Indices[j + 2]].Position.Z };
-				cyPoint2d t1 = { curMesh.Vertices[curMesh.Indices[j]].TextureCoordinate.X, curMesh.Vertices[curMesh.Indices[j]].TextureCoordinate.Y };
-				cyPoint2d t2 = { curMesh.Vertices[curMesh.Indices[j + 1]].TextureCoordinate.X, curMesh.Vertices[curMesh.Indices[j + 1]].TextureCoordinate.Y };
-				cyPoint2d t3 = { curMesh.Vertices[curMesh.Indices[j + 2]].TextureCoordinate.X, curMesh.Vertices[curMesh.Indices[j + 2]].TextureCoordinate.Y };
-				cyPoint3d c = { curMesh.MeshMaterial.Kd.X, curMesh.MeshMaterial.Kd.Y, curMesh.MeshMaterial.Kd.Z };
-				c = c.IsZero() ? palette[(10) % palette.size()] : c;
-
-				rotVec(q1, up, -animParam2 * 50);
-				rotVec(q2, up, -animParam2 * 50);
-				rotVec(q3, up, -animParam2 * 50);
-				quadrics.push_back(planeFromPoints(q1 / 0.5, q2 / 0.5, q3 / 0.5, c, t1, t2, t3, Tex_plane_2, Null_image, 0.5, 1.8));
-			}
-		}
+		/*if (i == objIndex)
+		continue;*/
+		double hitParamTemp = quadrics[i].intersect(hitPoint, hitPointToLight);
+		if (hitParamTemp < pointToLightDist)
+			return true;
 	}
-#endif
+	return false;
+}
 
-	cout << "Navigate using ARROW KEYS ...\n";
-	for (int space = 0; space < Xmax / 50; space++)
-		cout << " ";
-	cout << "|\n";
+cyPoint3d computeColorFromAreaLight(cyPoint3d& hitPoint, cyPoint3d& camToPix, AreaLight& a, int& objIndex, Quadric& q, vector<Quadric>& quadrics)
+{
+	double pX, pY, px, py, prx, pry;
+	cyPoint3d plpix;
+	cyPoint3d color, colortemp;
+	double pweighted = 1.0 / (a.pxsub * a.pysub);
 
-	for (int i = 0; i < Xmax; i++)
+	cyPoint3d lightPos, lightColor, hitPointToLight, camToHitPoint, normalAtHit;
+	double pointToLightDist;
+	bool isInShadow;
+
+	color = { 0, 0, 0 };
+
+	for (int pi = 0; pi < a.pxmax; pi++)
 	{
-		if (i % 50 == 0)
-			cout << "#";
-
-		for (int j = 0; j < Ymax; j++)
+		for (int pj = 0; pj < a.pymax; pj++)
 		{
-
-#ifndef ANTI_ALIASED
-			rx = 0.5;
-			ry = 0.5;
-			subPixX = 1;
-			subPixY = 1;
-#else
-			rx = (rand() % 10) / 10.0;
-			ry = (rand() % 10) / 10.0;
-			subPixX = 3;
-			subPixY = 3;
-#endif
-
-			double weighted = 1.0 / (subPixX * subPixY);
-			double timeVal = 0;
-			color = { 0, 0, 0 };
-
-			for (int p = 0; p < subPixX; p++)
+			prx = (rand() % 10) / 10.0;
+			pry = (rand() % 10) / 10.0;
+			for (int psub = 0; psub < a.pxsub; psub++)
 			{
-				for (int q = 0; q < subPixY; q++)
+				for (int qsub = 0; qsub < a.pysub; qsub++)
 				{
-					X = i + (p + rx) / subPixX;
-					Y = j + (q + ry) / subPixY;
-					x = X / Xmax;
-					y = Y / Ymax;
-					pix = cam.viewPortBottomLeft + cam.scaleX * cam.n0 * x + cam.scaleY * cam.n1 * y;
-					//pix = areaCam.eyeBottomLeft + areaCam.scaleX * areaCam.n0 * x + areaCam.scaleY * areaCam.n1 * y;
+					colortemp = { 0, 0, 0 };
+					pX = pi + (psub + prx) / a.pxsub;
+					pY = pj + (qsub + pry) / a.pysub;
+					px = pX / a.pxmax;
+					py = pY / a.pymax;
+					plpix = a.pos + a.scaleX * px * a.n0 + a.scaleY * py * a.n1;
 
-					// depth of field
-					primaryRay = (pix - areaCam.pos).GetNormalized();
-					pointOnFocalPlane = areaCam.pos + areaCam.focalLength * primaryRay;
-					for (int pi = 0; pi < areaCam.pxmax; pi++)
+					lightPos = plpix;
+					lightColor = a.color;
+					hitPointToLight = lightPos - hitPoint;
+					pointToLightDist = hitPointToLight.Length();
+					hitPointToLight.Normalize();
+					camToHitPoint = camToPix;
+					normalAtHit = q.normalAtHitPoint(hitPoint);
+
+					isInShadow = shadowRay(objIndex, hitPoint, hitPointToLight, pointToLightDist, quadrics);
+
+					colortemp += q.computeAmbientColor();
+
+					if (isInShadow == false)
 					{
-						for (int pj = 0; pj < areaCam.pymax; pj++)
-						{
-							prx = (rand() % 10) / 10.0;
-							pry = (rand() % 10) / 10.0;
-							for (int psub = 0; psub < areaCam.pxsub; psub++)
-							{
-								for (int qsub = 0; qsub < areaCam.pysub; qsub++)
-								{
-									pX = pi + (psub + prx) / areaCam.pxsub;
-									pY = pj + (qsub + pry) / areaCam.pysub;
-									px = pX / areaCam.pxmax;
-									py = pY / areaCam.pymax;
-									eyePos = areaCam.eyeBottomLeft + areaCam.scaleX * px * areaCam.n0 + areaCam.scaleY * py * areaCam.n1;
-
-#ifdef MOTION_BLUR
-									timeVal += weighted / 2.0;
-									quadrics[1].qc.x = timeVal / 3.0;
-									quadrics[2].qc.y = timeVal / 3.0;
-									timeVal += weighted;
-#endif
-
-									secondaryRay = (pointOnFocalPlane - eyePos).GetNormalized();
-									color += castRays(eyePos, secondaryRay, quadrics, lights, infSphere, 1) * weighted * psubweighted * pmaxweighted;
-								}
-							}
-						}
+						colortemp += q.computeDiffuseColor(normalAtHit, hitPointToLight, lightColor, pointToLightDist);
+						colortemp += q.computeSpecularColor(normalAtHit, hitPointToLight, lightColor, camToHitPoint);
+						colortemp += q.computeBorderColor(normalAtHit, camToHitPoint);
 					}
-					//
 
-					// camera painting
-#ifdef CAM_PAINTING
-					cp_r = camera_painting.texture[j][i][0];
-					cp_g = camera_painting.texture[j][i][1];
-					cp_b = camera_painting.texture[j][i][2];
-
-					cp_x = animParam2;
-					cp_y = animParam2;
-					cp_z = animParam2;
-
-					eye = cyPoint3d{ 0.2, 0, 6 } + cp_x * cp_r * cam.n0 + cp_y * cp_g * cam.n1 + cp_z * cp_b * cam.n2;
-					areaCam = { eye, view, up };
-#endif
-
-					//camToPix = (pix - cam.pos).GetNormalized();
-					//color += castRays(cam.pos, camToPix, quadrics, lights, infSphere, 1) * weighted;
+					color += colortemp * pweighted * 0.05;
 				}
 			}
-
-			frameBuffer[j][i][0] = (float)color[0];
-			frameBuffer[j][i][1] = (float)color[1];
-			frameBuffer[j][i][2] = (float)color[2];
-
-			for (int k = 0; k <= 2; k++)
-			{
-				if (frameBuffer[j][i][k] < 0.0)
-					frameBuffer[j][i][k] = 0.0;
-				else if (frameBuffer[j][i][k] > 1.0)
-					frameBuffer[j][i][k] = 1.0;
-			}
 		}
 	}
 
-	glDrawPixels(Xmax, Ymax, GL_RGB, GL_FLOAT, frameBuffer);
-	glFlush();
-	cout << "\nRendering Complete\n\n";
+	return color;
+}
 
-#ifdef OUTPUT_JPG
-	string fname = OUTPUT_JPG + to_string(animParam) + ".jpg";
-	Image :: writeImage(fname.c_str(), frameBuffer);
+cyPoint3d computeSolidTexture(cyPoint3d& hitPoint, Camera proj, int& objIndex, vector<Quadric>& quadrics, Image& I, int type, int solid)
+{
+	cyPoint3d nth = type == 0 ? -proj.n2 : proj.pos - hitPoint;
+	double nthlength = type == 0 ? INT_MAX : nth.Length();
+	nth.Normalize();
+	cyPoint3d ph1;
+	double dist, distTemp;
+	double x1, y1;
+	cyPoint3d color(0, 0, 0);
+	bool isInShadow = solid == 0 ? false : shadowRay(objIndex, hitPoint, nth, nthlength, quadrics);
+	if (isInShadow == false)
+	{
+		dist = (proj.viewPortBottomLeft - hitPoint).Dot(proj.n2);
+		distTemp = nth.Dot(proj.n2);
+		if (distTemp != 0 && dist / distTemp > 0)
+		{
+			dist /= distTemp;
+			ph1 = hitPoint + dist*nth;
+			x1 = (ph1 - proj.viewPortBottomLeft).Dot(proj.n0) / proj.scaleX;
+			y1 = (ph1 - proj.viewPortBottomLeft).Dot(proj.n1) / proj.scaleY;
+			if (x1 > 0 && x1 < 1 && y1 > 0 && y1 < 1)
+			{
+				x1 -= floor(x1);
+				y1 -= floor(y1);
+				/*if (x1 < 0)
+				x1 = 1 - x1;
+				if (y1 < 0)
+				y1 = 1 - y1;*/
+				x1 *= I.width;
+				y1 *= I.height;
+				x1 = (int)x1 % I.width;
+				y1 = (int)y1 % I.height;
+				color = I.texture[(int)y1][(int)x1];
+			}
+		}
+	}
+	return color;
+}
+
+Quadric planeFromPoints(cyPoint3d p0, cyPoint3d p1, cyPoint3d p2, cyPoint3d c, cyPoint2d t1, cyPoint2d t2, cyPoint2d t3, Image& I, Image& N, double refl, double refr)
+{
+	cyPoint3d planarVec1 = p1 - p0;
+	cyPoint3d planarVec2 = p2 - p0;
+	cyPoint3d n2 = planarVec1.Cross(planarVec2).GetNormalized();
+	cyPoint3d n0 = planarVec1.GetNormalized();
+	cyPoint3d n1 = n0.Cross(n2).GetNormalized();
+	vector<pair<double, cyPoint3d>> colors = { { 0.01, c },{ 0.5, c },{ 0.0, c },{ 0.0,{ 1, 1, 1 } } };
+	return Quadric({ 0, 0, 0 }, 1, 0, (p0 + p1 + p2) / 3, { 1, 1, 1 }, { n0, n1, n2 }, colors, I, N, { p0, p1, p2 }, { t1, t2, t3 }, refl, refr);
+}
+
+cyPoint3d castRays(cyPoint3d pos, cyPoint3d dir, vector<Quadric>& quadrics, vector<Light>& lights, Quadric& infSphere, int bounce)
+{
+	cyPoint3d hitPoint, normalAtHit, reflectedAtHit;
+	cyPoint3d lightPos, lightColor, spotLightDir;
+	cyPoint3d hitPointToLight, lightReflect, camToHitPoint;
+	cyPoint3d colorTemp;
+	cyPoint3d subSurfacePoint, subTolight;
+	int objIndex;
+	bool isInShadow = false;
+	double spotLightComp, pointToLightDist, subToLightDist;
+	double hitParam, hitParamTemp;
+	double d, r;
+	int maxBounces = 5;
+	cyPoint3d refractedAtHit, recurRay;
+
+	objIndex = -1;
+	hitParam = farPlane;
+	cyPoint3d color = { 0, 0, 0 };
+
+	for (unsigned int index = 0; index < quadrics.size(); index++)
+	{
+		hitParamTemp = quadrics[index].intersect(pos, dir);
+		if (hitParamTemp < hitParam)
+		{
+			hitParam = hitParamTemp;
+			objIndex = index;
+		}
+	}
+
+	if (objIndex == -1)
+	{
+		// take care of hitpoint
+		//color = { 0.4, 0.4, 0.4 };
+		color = infSphere.computeTextureColor(hitPoint, dir, true);
+	}
+	else
+	{
+		colorTemp = { 0,0,0 };
+		Quadric q = quadrics[objIndex];
+		hitPoint = pos + dir * hitParam;
+		camToHitPoint = dir;
+
+		normalAtHit = q.normalAtHitPoint(hitPoint);
+		if ((-dir).Dot(normalAtHit) < 0)
+			normalAtHit = -normalAtHit;
+
+		//q.computeTextureColor(hitPoint, normalAtHit);
+
+		double cosTheta = dir.Dot(normalAtHit);
+		reflectedAtHit = (dir - 2 * (cosTheta * normalAtHit)).GetNormalized();
+		double nu = q.refractive_index;
+
+#ifdef GLOSSY
+		cyPoint3d randomVec(rand() % 10 / 10.0, rand() % 10 / 10.0, rand() % 10 / 10.0);
+		reflectedAtHit += randomVec*0.36;
+		reflectedAtHit.Normalize();
 #endif
-}
 
-void update()
-{
-	animParam += 0.05;
-	if (animParam > 1)
-		animParam2 += 0.075;
-	/*else
-		eye = cyPoint3d(0, 0, 4) - animParam * view;*/
-	glutPostRedisplay();
-}
+		// handle better
+		if (nu == 0.0)
+			recurRay = reflectedAtHit;
+		else
+		{
+			double refracTerm = ((cosTheta * cosTheta) - 1) / (nu * nu) + 1;
+			if (refracTerm > 0)
+			{
+				refractedAtHit = (dir / nu - (cosTheta / nu + sqrt(refracTerm)) * normalAtHit).GetNormalized();
+#ifdef TRANSLUCENT
+				cyPoint3d randomVec2(rand() % 10 / 10.0, rand() % 10 / 10.0, rand() % 10 / 10.0);
+				refractedAtHit += randomVec*0.16;
+				refractedAtHit.Normalize();
+#endif
+				recurRay = refractedAtHit;
+			}
+			else
+				recurRay = reflectedAtHit;
+		}
 
-int main(int argc, char** argv)
-{
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
-	glutInitWindowPosition(0, 0);
-	glutInitWindowSize(Xmax, Ymax);
-	glutCreateWindow("----Synthesized----");
-	glutDisplayFunc(renderScene);
-	glutKeyboardFunc(quit);
-	glutSpecialFunc(keyRot);
-	glutIdleFunc(update);
-	glutMainLoop();
+		q.computeTextureColor(hitPoint, normalAtHit);
 
-	return 0;
+#ifdef AREALIGHT
+		for (unsigned int a = 0; a < areaLights.size(); a++)
+			colorTemp += computeColorFromAreaLight(hitPoint, dir, areaLights[a], objIndex, q, quadrics);
+#else
+		for (unsigned int lightIndex = 0; lightIndex < lights.size(); lightIndex++)
+		{
+			lightPos = lights[lightIndex].pos;
+			lightColor = lights[lightIndex].color;
+			spotLightDir = lights[lightIndex].dir;
+			hitPointToLight = lightPos - hitPoint;
+			pointToLightDist = hitPointToLight.Length();
+			hitPointToLight.Normalize();
+
+			spotLightComp = spotLightDir.IsZero() ? 1.0 : clamp(spotLightDir.GetNormalized().Dot(-hitPointToLight), 0.9, 0.91);
+			colorTemp += q.computeAmbientColor();
+
+#ifndef SUBSURFACESSCATTERING
+			isInShadow = shadowRay(objIndex, hitPoint, hitPointToLight, pointToLightDist, quadrics);
+			if (isInShadow == false)
+			{
+				colorTemp += q.computeDiffuseColor(normalAtHit, hitPointToLight, lightColor, pointToLightDist, spotLightComp);
+				colorTemp += q.computeSpecularColor(normalAtHit, hitPointToLight, lightColor, camToHitPoint, spotLightComp);
+				colorTemp += q.computeBorderColor(normalAtHit, camToHitPoint, spotLightComp);
+			}
+#ifdef PROJTEX
+			// type(second last parameter) = 0 - parallel
+			// type = 1 - perspective
+			// solid(last parameter) = 0 - solid texturing
+			// solid = 1 - light shading
+			solidColor = computeSolidTexture(hitPoint, proj, objIndex, quadrics, I5, 0, 0);
+			colorTemp = solidColor.IsZero() ? colorTemp : solidColor;
+#endif
+#else
+			d = 0.1;
+			r = 0;
+			subSurfacePoint = hitPoint - (d)*normalAtHit;
+			subTolight = lightPos - subSurfacePoint;
+			subToLightDist = subTolight.Length();
+			subTolight.Normalize();
+			isInShadow = subTolight.Dot(normalAtHit) < d ? true : false;
+
+			//if (isInShadow == false)
+			//{
+			for (unsigned int qi = 0; qi < quadrics.size(); qi++)
+			{
+				r += quadrics[qi].intersect_length(subSurfacePoint, subTolight, subToLightDist);
+			}
+
+			colorTemp += q.computeDiffuseColor(normalAtHit, hitPointToLight, lightColor, pointToLightDist, spotLightComp, d / (r));
+			colorTemp += q.computeSpecularColor(normalAtHit, hitPointToLight, lightColor, camToHitPoint, spotLightComp);
+			colorTemp += q.computeBorderColor(normalAtHit, camToHitPoint, spotLightComp);
+			//}
+#endif
+		}
+#endif
+		if (bounce < maxBounces)
+		{
+			color += (1.0 - q.reflectivity) * colorTemp;
+			color += q.reflectivity * castRays(hitPoint, recurRay, quadrics, lights, infSphere, bounce + 1);
+		}
+		else
+			color += colorTemp;
+	}
+	return color;
 }
+#endif

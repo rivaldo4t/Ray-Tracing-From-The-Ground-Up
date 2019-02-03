@@ -1,9 +1,9 @@
 #pragma once
-#include "cyPoint.h"
-#include "Image.h"
 #include <iostream>
 #include <vector>
 #include <math.h>
+#include "cyPoint.h"
+#include "Image.hpp"
 using namespace std;
 
 class Quadric

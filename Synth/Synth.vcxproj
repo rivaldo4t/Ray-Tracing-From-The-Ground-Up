@@ -147,21 +147,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Image.cpp" />
+    <ClCompile Include="LoadObj.cpp" />
+    <ClCompile Include="Main.cpp" />
     <ClCompile Include="Tracer.cpp" />
+    <ClCompile Include="Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Camera.h" />
-    <ClInclude Include="Common.h" />
-    <ClInclude Include="cyCore.h" />
+    <ClInclude Include="Camera.hpp" />
+    <ClInclude Include="Tracer.hpp" />
+    <ClInclude Include="Utility.hpp" />
     <ClInclude Include="cyPoint.h" />
-    <ClInclude Include="Colors.h" />
-    <ClInclude Include="Image.h" />
-    <ClInclude Include="Light.h" />
+    <ClInclude Include="Image.hpp" />
+    <ClInclude Include="Light.hpp" />
+    <ClInclude Include="LoadObj.hpp" />
     <ClInclude Include="OBJ_Loader.h" />
-    <ClInclude Include="Quadric.h" />
+    <ClInclude Include="Quadric.hpp" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="stb_image_write.h" />
-    <ClInclude Include="Tracer.h" />
+    <ClInclude Include="Main.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
