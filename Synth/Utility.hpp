@@ -10,3 +10,5 @@ extern std::vector<cyPoint3d> palette;
 
 cyPoint3d projectPoint(cyPoint3d p, cyPoint3d o, double d);
 void rotVec(cyPoint3d& v1, cyPoint3d v2, double degAngle);
+double clamp(double val, double low = -1, double high = 1);
+inline double absMax(cyPoint3d a);

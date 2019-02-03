@@ -150,6 +150,7 @@
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="LoadObj.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Quadric.cpp" />
     <ClCompile Include="Tracer.cpp" />
     <ClCompile Include="Utility.cpp" />
   </ItemGroup>

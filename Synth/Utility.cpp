@@ -35,3 +35,30 @@ void rotVec(cyPoint3d& v1, cyPoint3d v2, double degAngle)
 	v1 = (v1 * cos_theta) + (v2.Cross(v1) * sin_theta) + (v2 * v2.Dot(v1) * (1 - cos_theta));
 	//v1.Normalize();
 }
+
+double clamp(double val, double low, double high)
+{
+	if (val < low)
+		return 0;
+	else if (val > high)
+		return 1;
+	else
+		return (val - low) / (high - low);
+}
+
+double absMax(cyPoint3d a)
+{
+	double absmax = abs(a[0]);
+	bool minus = a[0] < 0 ? true : false;
+	for (int i = 1; i <= 2; i++)
+	{
+		if (abs(a[i]) > absmax)
+		{
+			absmax = abs(a[i]);
+			minus = a[i] < 0 ? true : false;
+		}
+	}
+	if (minus == true)
+		absmax *= -1;
+	return absmax;
+}
