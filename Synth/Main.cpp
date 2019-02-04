@@ -64,6 +64,7 @@ void renderScene()
 	cout << "|\n";
 
 //#pragma omp parellel for
+	// render pixels row wise
 	for (int i = 0; i < Xmax; i++)
 	{
 		if (i % 50 == 0)
@@ -152,21 +153,13 @@ void renderScene()
 				}
 			}
 
-			frameBuffer[j][i][0] = (float)color[0];
-			frameBuffer[j][i][1] = (float)color[1];
-			frameBuffer[j][i][2] = (float)color[2];
-
-			for (int k = 0; k <= 2; k++)
-			{
-				if (frameBuffer[j][i][k] < 0.0)
-					frameBuffer[j][i][k] = 0.0;
-				else if (frameBuffer[j][i][k] > 1.0)
-					frameBuffer[j][i][k] = 1.0;
-			}
+			frameBuffer[(Ymax * i + j) * 3 + 0] = clamp(color[0], 0.0, 1.0);
+			frameBuffer[(Ymax * i + j) * 3 + 1] = clamp(color[1], 0.0, 1.0);
+			frameBuffer[(Ymax * i + j) * 3 + 2] = clamp(color[2], 0.0, 1.0);
 		}
 	}
 
-	glDrawPixels(Xmax, Ymax, GL_RGB, GL_FLOAT, frameBuffer);
+	glDrawPixels(Xmax, Ymax, GL_RGB, GL_FLOAT, frameBuffer.data());
 	glFlush();
 	cout << "\nRendering Complete\n\n";
 

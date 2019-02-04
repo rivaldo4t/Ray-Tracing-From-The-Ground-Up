@@ -29,21 +29,24 @@ Image :: Image(const char* path)
 	stbi_image_free(data);
 }
 
-// fix the hardcoding
-void Image ::writeImage(const char* path, float(*frameBuffer)[512][3])
+void Image :: flip(vector<float>& data)
 {
-	uint8_t* rgb_image = new uint8_t[Xmax * Ymax * 3];
-	int k = 0;
-	for (int j = Ymax - 1; j >= 0; --j)
-	{
+	std::vector<float> flippedData;
+	int row = Xmax * 3;
+	for (size_t i = 0; i < data.size(); i += row)
+		flippedData.insert(flippedData.begin(), data.begin() + i, data.begin() + i + row);
+	data = std::move(flippedData);
+}
+
+void Image :: writeImage(const char* path, vector<float>& frameBuffer)
+{
+	uint8_t* rgb_image = new uint8_t[Ymax * Xmax * 3];
+	flip(frameBuffer);
+	for (int j = 0; j < Ymax; ++j)
 		for (int i = 0; i < Xmax; ++i)
-		{
-			rgb_image[k] = unsigned char(frameBuffer[j][i][0] * 255);
-			rgb_image[k + 1] = unsigned char(frameBuffer[j][i][1] * 255);
-			rgb_image[k + 2] = unsigned char(frameBuffer[j][i][2] * 255);
-			k += 3;
-		}
-	}
+			for (int k = 0; k < 3; ++k)
+				rgb_image[(j * Xmax + i) * 3 + k] = uint8_t(frameBuffer[(j * Xmax + i) * 3 + k] * 255);
+			
 	stbi_write_jpg(path, Xmax, Ymax, 3, rgb_image, Xmax * 3);
 	stbi_image_free(rgb_image);
 }

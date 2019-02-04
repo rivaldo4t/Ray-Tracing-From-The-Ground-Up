@@ -30,7 +30,7 @@ Image Tex_sphere("textures/AdobeStock_space_1.1.jpeg");
 
 double rotX = 0.0, rotY = 0.0;
 const int Xmax = 512, Ymax = 512;
-float frameBuffer[Ymax][Xmax][3] = { 0 };
+vector<float> frameBuffer(Ymax * Xmax * 3, 0.0f);
 AreaLight areaLight({ 0, 10, -2 }, { 1, 1, 1 }, { 0, -1, 0 }, { 0, 0, 1 });
 vector<AreaLight> areaLights = { areaLight };
 double animParam = 0, animParam2 = 0;

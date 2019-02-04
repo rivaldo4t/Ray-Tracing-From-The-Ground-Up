@@ -12,5 +12,6 @@ public:
 
 	Image();
 	Image(const char* path);
-	static void writeImage(const char* path, float(*frameBuffer)[512][3]);
+	static void flip(vector<float>& data);
+	static void writeImage(const char* path, vector<float>& frameBuffer);
 };
