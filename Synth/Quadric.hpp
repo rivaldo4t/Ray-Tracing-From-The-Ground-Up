@@ -4,6 +4,7 @@
 #include <math.h>
 #include "cyPoint.h"
 #include "Image.hpp"
+#include "Material.hpp"
 using namespace std;
 
 class Quadric
@@ -15,16 +16,11 @@ public:
 	cyPoint3d qc;
 	cyPoint3d si;
 	vector<cyPoint3d> N;
-	cyPoint3d color;
-	double ambientFact, diffuseFact, specularFact, borderFact;
-	cyPoint3d ambientColor, diffuseColor, specularColor, borderColor;
-	Image& textureImage;
-	Image& normalImage;
+	Material material;
 	vector<cyPoint3d> points;
 	vector<cyPoint2d> texpoints;
-	double reflectivity;
-	double refractive_index;
 	double s, t;
+	
 	//Quadric() {}
 
 	Quadric(cyPoint3d _ai2,
@@ -33,32 +29,9 @@ public:
 		cyPoint3d _qc,
 		cyPoint3d _si,
 		vector<cyPoint3d> _N,
-		vector<pair<double, cyPoint3d>> _colors, 
-		Image& _I, Image& _I2,
+		Material mat,
 		vector<cyPoint3d> _points = {},
-		vector<cyPoint2d> _texpoints = {}, 
-		double _ref = 0.0,
-		double _ior = 1.6) :
-		ai2(_ai2), a21(_a21), a00(_a00), qc(_qc), si(_si), N(_N),
-		ambientFact(_colors[0].first), ambientColor(_colors[0].second),
-		diffuseFact(_colors[1].first), diffuseColor(_colors[1].second),
-		specularFact(_colors[2].first), specularColor(_colors[2].second),
-		borderFact(_colors[3].first), borderColor(_colors[3].second),
-		textureImage(_I), normalImage(_I2), points(_points), texpoints(_texpoints),
-		reflectivity(_ref), refractive_index(_ior)
-		{
-			N[0].Normalize();
-			N[1].Normalize();
-			N[2].Normalize();
-			//plane
-			if (ai2.IsZero())
-				type = 0;
-			//sphere; for now
-			else
-				type = 1;
-			s = 0.0;
-			t = 0.0;
-		}
+		vector<cyPoint2d> _texpoints = {});
 
 	double intersect(cyPoint3d eye, cyPoint3d eyeToPix);
 	double intersect_length(cyPoint3d& eye, cyPoint3d& eyeToPix, double lightdist);

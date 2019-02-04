@@ -1,5 +1,30 @@
 #include "Quadric.hpp"
 
+Quadric ::Quadric(	cyPoint3d _ai2,
+					double _a21,
+					double _a00,
+					cyPoint3d _qc,
+					cyPoint3d _si,
+					vector<cyPoint3d> _N,
+					Material mat,
+					vector<cyPoint3d> _points,
+					vector<cyPoint2d> _texpoints) :
+					ai2(_ai2), a21(_a21), a00(_a00), qc(_qc), si(_si), N(_N),
+					material(mat), points(_points), texpoints(_texpoints)
+{
+	N[0].Normalize();
+	N[1].Normalize();
+	N[2].Normalize();
+	//plane
+	if (ai2.IsZero())
+		type = 0;
+	//sphere; for now
+	else
+		type = 1;
+	s = 0.0;
+	t = 0.0;
+}
+
 double Quadric :: intersect(cyPoint3d eye, cyPoint3d eyeToPix)
 {
 	double A(0), B(0), C(0), temp1, temp2, D;
@@ -137,7 +162,7 @@ cyPoint3d Quadric :: normalAtHitPoint(cyPoint3d hitPoint)
 	}
 	normalAtHit.Normalize();
 
-	if (normalImage.data != NULL)
+	if (material.normalImage.data != NULL)
 	{
 		cyPoint3d color = { 0, 0, 0 };
 		double u, v, ratioX, ratioY;
@@ -149,8 +174,8 @@ cyPoint3d Quadric :: normalAtHitPoint(cyPoint3d hitPoint)
 		{
 		case 0:
 		{
-			w = normalImage.width;
-			h = normalImage.height;
+			w = material.normalImage.width;
+			h = material.normalImage.height;
 
 			u = (1 - s - t)*texpoints[0][0] + s*texpoints[1][0] + t*texpoints[2][0];
 			v = (1 - s - t)*texpoints[0][1] + s*texpoints[1][1] + t*texpoints[2][1];
@@ -162,10 +187,10 @@ cyPoint3d Quadric :: normalAtHitPoint(cyPoint3d hitPoint)
 			ratioX = u - pixelX;
 			ratioY = v - pixelY;
 
-			color = normalImage.texture[(pixelY + 0) % h][(pixelX + 0) % w] * (1 - ratioX) * (1 - ratioY) +
-				normalImage.texture[(pixelY + 1) % h][(pixelX + 0) % w] * (1 - ratioX) * ratioY +
-				normalImage.texture[(pixelY + 0) % h][(pixelX + 1) % w] * ratioX * (1 - ratioY) +
-				normalImage.texture[(pixelY + 1) % h][(pixelX + 1) % w] * ratioX * ratioY;
+			color = material.normalImage.texture[(pixelY + 0) % h][(pixelX + 0) % w] * (1 - ratioX) * (1 - ratioY) +
+				material.normalImage.texture[(pixelY + 1) % h][(pixelX + 0) % w] * (1 - ratioX) * ratioY +
+				material.normalImage.texture[(pixelY + 0) % h][(pixelX + 1) % w] * ratioX * (1 - ratioY) +
+				material.normalImage.texture[(pixelY + 1) % h][(pixelX + 1) % w] * ratioX * ratioY;
 
 			cyPoint3d t;
 			t = (2 * color[0] - 1) * N[0] + (2 * color[1] - 1) * N[1] + (2 * color[2] - 1) * N[2];
@@ -175,8 +200,8 @@ cyPoint3d Quadric :: normalAtHitPoint(cyPoint3d hitPoint)
 		}
 		case 1:
 		{
-			w = normalImage.width;
-			h = normalImage.height;
+			w = material.normalImage.width;
+			h = material.normalImage.height;
 
 			phi = N[2].Dot(hitPoint - qc) / si[2];
 			phi = acos(phi);
@@ -198,10 +223,10 @@ cyPoint3d Quadric :: normalAtHitPoint(cyPoint3d hitPoint)
 			ratioY = v - pixelY;
 			ratioX = u - pixelX;
 
-			color = normalImage.texture[(pixelY + 0) % h][(pixelX + 0) % w] * (1 - ratioX) * (1 - ratioY) +
-				normalImage.texture[(pixelY + 1) % h][(pixelX + 0) % w] * (1 - ratioX) * ratioY +
-				normalImage.texture[(pixelY + 0) % h][(pixelX + 1) % w] * ratioX * (1 - ratioY) +
-				normalImage.texture[(pixelY + 1) % h][(pixelX + 1) % w] * ratioX * ratioY;
+			color = material.normalImage.texture[(pixelY + 0) % h][(pixelX + 0) % w] * (1 - ratioX) * (1 - ratioY) +
+				material.normalImage.texture[(pixelY + 1) % h][(pixelX + 0) % w] * (1 - ratioX) * ratioY +
+				material.normalImage.texture[(pixelY + 0) % h][(pixelX + 1) % w] * ratioX * (1 - ratioY) +
+				material.normalImage.texture[(pixelY + 1) % h][(pixelX + 1) % w] * ratioX * ratioY;
 
 			cyPoint3d t;
 			t = (2 * color[0] - 1) * N[0] + (2 * color[1] - 1) * N[1] + (2 * color[2] - 1) * N[2];
@@ -217,7 +242,7 @@ cyPoint3d Quadric :: normalAtHitPoint(cyPoint3d hitPoint)
 
 cyPoint3d Quadric :: computeAmbientColor()
 {
-	return ambientFact * ambientColor;
+	return material.ambientFact * material.ambientColor;
 }
 
 cyPoint3d Quadric :: computeDiffuseColor(cyPoint3d& normalAtHit, cyPoint3d& hitPointToLight, cyPoint3d& lightColor, double pointToLightDist, double spotLightComp, double t)
@@ -225,7 +250,7 @@ cyPoint3d Quadric :: computeDiffuseColor(cyPoint3d& normalAtHit, cyPoint3d& hitP
 	cyPoint3d color = { 0, 0, 0 };
 	double diffuseComp = t == 0.0 ? clamp(normalAtHit.Dot(hitPointToLight), 0, 0.5) : clamp(t, 0, 1);
 	diffuseComp *= spotLightComp;
-	color = diffuseComp * diffuseColor * (diffuseFact * 100) * lightColor / (pow(pointToLightDist, 2));
+	color = diffuseComp * material.diffuseColor * (material.diffuseFact * 100) * lightColor / (pow(pointToLightDist, 2));
 	return color;
 }
 
@@ -236,7 +261,7 @@ cyPoint3d Quadric :: computeSpecularColor(cyPoint3d& normalAtHit, cyPoint3d& hit
 	lightReflect.Normalize();
 	double specularComp = clamp((-lightReflect).Dot(eyeToHitPoint), 0.94, 0.96);
 	specularComp *= spotLightComp;
-	color = specularComp * specularColor * lightColor * specularFact;
+	color = specularComp * material.specularColor * lightColor * material.specularFact;
 	return color;
 }
 
@@ -245,13 +270,13 @@ cyPoint3d Quadric :: computeBorderColor(cyPoint3d& normalAtHit, cyPoint3d& eyeTo
 	cyPoint3d color = { 0, 0, 0 };
 	double borderComp = eyeToHitPoint.Dot(normalAtHit) + 1;
 	borderComp *= spotLightComp;
-	color = clamp(borderComp, 0.84, 0.85) * borderColor * borderFact;
+	color = clamp(borderComp, 0.84, 0.85) * material.borderColor * material.borderFact;
 	return color;
 }
 
 cyPoint3d Quadric :: computeTextureColor(cyPoint3d hitPoint, cyPoint3d normalAtHit, bool env)
 {
-	if (textureImage.data != NULL)
+	if (material.textureImage.data != NULL)
 	{
 		cyPoint3d color = { 0, 0, 0 };
 		double u, v, ratioX, ratioY;
@@ -263,8 +288,8 @@ cyPoint3d Quadric :: computeTextureColor(cyPoint3d hitPoint, cyPoint3d normalAtH
 			//plane
 		case 0:
 		{
-			w = textureImage.width;
-			h = textureImage.height;
+			w = material.textureImage.width;
+			h = material.textureImage.height;
 
 			u = (1 - s - t)*texpoints[0][0] + s*texpoints[1][0] + t*texpoints[2][0];
 			v = (1 - s - t)*texpoints[0][1] + s*texpoints[1][1] + t*texpoints[2][1];
@@ -277,10 +302,10 @@ cyPoint3d Quadric :: computeTextureColor(cyPoint3d hitPoint, cyPoint3d normalAtH
 			ratioY = v - pixelY;
 
 			//color = textureImage.texture[(pixelY + 0) % h][(pixelX + 0) % w];
-			color = textureImage.texture[(pixelY + 0) % h][(pixelX + 0) % w] * (1 - ratioX) * (1 - ratioY) +
-				textureImage.texture[(pixelY + 1) % h][(pixelX + 0) % w] * (1 - ratioX) * ratioY +
-				textureImage.texture[(pixelY + 0) % h][(pixelX + 1) % w] * ratioX * (1 - ratioY) +
-				textureImage.texture[(pixelY + 1) % h][(pixelX + 1) % w] * ratioX * ratioY;
+			color = material.textureImage.texture[(pixelY + 0) % h][(pixelX + 0) % w] * (1 - ratioX) * (1 - ratioY) +
+				material.textureImage.texture[(pixelY + 1) % h][(pixelX + 0) % w] * (1 - ratioX) * ratioY +
+				material.textureImage.texture[(pixelY + 0) % h][(pixelX + 1) % w] * ratioX * (1 - ratioY) +
+				material.textureImage.texture[(pixelY + 1) % h][(pixelX + 1) % w] * ratioX * ratioY;
 
 			break;
 		}
@@ -289,8 +314,8 @@ cyPoint3d Quadric :: computeTextureColor(cyPoint3d hitPoint, cyPoint3d normalAtH
 		{
 			double phi, theta, tempX;
 
-			w = textureImage.width;
-			h = textureImage.height;
+			w = material.textureImage.width;
+			h = material.textureImage.height;
 
 			if (env)
 				phi = N[2].Dot(normalAtHit) / si[2];
@@ -322,18 +347,18 @@ cyPoint3d Quadric :: computeTextureColor(cyPoint3d hitPoint, cyPoint3d normalAtH
 			ratioY = v - pixelY;
 			ratioX = u - pixelX;
 
-			color = textureImage.texture[(pixelY + 0) % h][(pixelX + 0) % w] * (1 - ratioX) * (1 - ratioY) +
-				textureImage.texture[(pixelY + 1) % h][(pixelX + 0) % w] * (1 - ratioX) * ratioY +
-				textureImage.texture[(pixelY + 0) % h][(pixelX + 1) % w] * ratioX * (1 - ratioY) +
-				textureImage.texture[(pixelY + 1) % h][(pixelX + 1) % w] * ratioX * ratioY;
+			color = material.textureImage.texture[(pixelY + 0) % h][(pixelX + 0) % w] * (1 - ratioX) * (1 - ratioY) +
+				material.textureImage.texture[(pixelY + 1) % h][(pixelX + 0) % w] * (1 - ratioX) * ratioY +
+				material.textureImage.texture[(pixelY + 0) % h][(pixelX + 1) % w] * ratioX * (1 - ratioY) +
+				material.textureImage.texture[(pixelY + 1) % h][(pixelX + 1) % w] * ratioX * ratioY;
 
 			break;
 		}
 		}
 
-		diffuseColor = color;
-		specularColor = color;
-		refractive_index = color[0] > 0.5 ? 1.5 : 2.0;
+		material.diffuseColor = color;
+		material.specularColor = color;
+		material.refractive_index = color[0] > 0.5 ? 1.5 : 2.0;
 
 		return color;
 	}

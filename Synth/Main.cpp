@@ -9,23 +9,21 @@ using namespace std;
 //#define MOTION_BLUR
 //#define CAM_PAINTING
 
-cyPoint3d eye(0.2, 0, 6);
-cyPoint3d view(0, 0, -1);
-cyPoint3d up(0, 1, 0);
-
 void renderScene()
 {
+	cyPoint3d eye(0.2, 0, 6);
+	cyPoint3d view(0, 0, -1);
+	cyPoint3d up(0, 1, 0);
+
 	cyPoint3d color, pix, camToPix;
 	double X, Y, x, y, rx, ry;
 	int subPixX, subPixY;
 
 	Camera cam = {eye, view, up, double(Xmax) / double(Ymax) * 10, 10, 6};
 
-	vector<Light> lights = {	
-								{ { 0, 10, 0 },{ 0.6, 0.6, 0.6 } },
-								{ { -6, 0, 6 },{ 0.2, 0.2, 0.2 } },
-								{ { 6, 0, 6 }, { 0.6, 0.6, 0.6 }},
-	};
+	vector<Light> lights = { {{ 0, 10, 0 },{ 0.6, 0.6, 0.6 }},
+							 {{ -6, 0, 6 },{ 0.2, 0.2, 0.2 }},
+							 {{ 6, 0, 6 }, { 0.6, 0.6, 0.6 }} };
 	
 	Camera proj = { { 0, 20, -4 },{ 0, -1, 0 },{ 0, 0, -1 }, 9, 9, 10 };
 	cyPoint3d solidColor;
@@ -47,12 +45,14 @@ void renderScene()
 	vector<cyPoint3d> N = { { 0, 0, -1 },{ -1, 0, 0 },{ 0, -1, 0 } };
 	vector<pair<double, cyPoint3d>> colors = { { 0.05, { 1, 1, 1 } }, { 0.5, _725E9C }, { 0.0, _725E9C }, { 0.0 ,{ 1, 1, 1 } } };
 	
-	Quadric infSphere({ 1, 1, 1 }, 0, -1, { 0, 0, 0 }, { 1, 1, 1 }, N, colors, Tex_env, Null_image);
+	Material mt1(0.05, { 1, 1, 1 }, 0.5, _725E9C , 0.0, _725E9C, 0.0, { 1, 1, 1 }, Tex_env, Null_image);
+	Quadric infSphere({ 1, 1, 1 }, 0, -1, { 0, 0, 0 }, { 1, 1, 1 }, N, mt1);
 
 	vector<pair<double, cyPoint3d>> colors3 = { { 0.05,{ 1, 1, 1 } },{ 0.5, {0.7, 0.7, 0.7} },{ 0.0, {1,1,1} },{ 0.0 ,{ 1, 1, 1 } } };
+	Material mt2(0.05, { 1, 1, 1 }, 0.5, { 0.7, 0.7, 0.7 }, 0.0, { 1, 1, 1 }, 0.0, { 1, 1, 1 }, Tex_sphere, Null_image, 0, 0);
 	rotVec(N[0], N[2], -animParam * 40);
 	rotVec(N[1], N[2], -animParam * 40);
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0.5 * cos(animParam), 0, 0.5 * sin(animParam) }, { 1, 1, 1 }, N, colors3, Tex_sphere, Null_image, {}, {}, 0, 0));
+	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0.5 * cos(animParam), 0, 0.5 * sin(animParam) }, { 1, 1, 1 }, N, mt2));
 
 #ifdef OBJFILE
 	LoadObjFile(OBJFILE, quadrics);

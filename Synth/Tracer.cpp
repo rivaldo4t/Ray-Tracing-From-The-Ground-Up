@@ -123,7 +123,9 @@ Quadric planeFromPoints(cyPoint3d p0, cyPoint3d p1, cyPoint3d p2, cyPoint3d c, c
 	cyPoint3d n0 = planarVec1.GetNormalized();
 	cyPoint3d n1 = n0.Cross(n2).GetNormalized();
 	vector<pair<double, cyPoint3d>> colors = { { 0.01, c },{ 0.5, c },{ 0.0, c },{ 0.0,{ 1, 1, 1 } } };
-	return Quadric({ 0, 0, 0 }, 1, 0, (p0 + p1 + p2) / 3, { 1, 1, 1 }, { n0, n1, n2 }, colors, I, N, { p0, p1, p2 }, { t1, t2, t3 }, refl, refr);
+	Material mt(0.01, c, 0.5, c, 0.0, c, 0.0, { 1, 1, 1 }, I, N, refl, refr);
+	//return Quadric({ 0, 0, 0 }, 1, 0, (p0 + p1 + p2) / 3, { 1, 1, 1 }, { n0, n1, n2 }, colors, I, N, mt, { p0, p1, p2 }, { t1, t2, t3 }, refl, refr);
+	return Quadric({ 0, 0, 0 }, 1, 0, (p0 + p1 + p2) / 3, { 1, 1, 1 }, { n0, n1, n2 }, mt, { p0, p1, p2 }, { t1, t2, t3 });
 }
 
 cyPoint3d castRays(cyPoint3d pos, cyPoint3d dir, vector<Quadric>& quadrics, vector<Light>& lights, Quadric& infSphere, int bounce)
@@ -176,7 +178,7 @@ cyPoint3d castRays(cyPoint3d pos, cyPoint3d dir, vector<Quadric>& quadrics, vect
 
 		double cosTheta = dir.Dot(normalAtHit);
 		reflectedAtHit = (dir - 2 * (cosTheta * normalAtHit)).GetNormalized();
-		double nu = q.refractive_index;
+		double nu = q.material.refractive_index;
 
 #ifdef GLOSSY
 		cyPoint3d randomVec(rand() % 10 / 10.0, rand() % 10 / 10.0, rand() % 10 / 10.0);
@@ -263,8 +265,8 @@ cyPoint3d castRays(cyPoint3d pos, cyPoint3d dir, vector<Quadric>& quadrics, vect
 #endif
 		if (bounce < maxBounces)
 		{
-			color += (1.0 - q.reflectivity) * colorTemp;
-			color += q.reflectivity * castRays(hitPoint, recurRay, quadrics, lights, infSphere, bounce + 1);
+			color += (1.0 - q.material.reflectivity) * colorTemp;
+			color += q.material.reflectivity * castRays(hitPoint, recurRay, quadrics, lights, infSphere, bounce + 1);
 		}
 		else
 			color += colorTemp;

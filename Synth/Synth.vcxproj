@@ -148,8 +148,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Image.cpp" />
+    <ClCompile Include="Light.cpp" />
     <ClCompile Include="LoadObj.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Material.cpp" />
     <ClCompile Include="Quadric.cpp" />
     <ClCompile Include="Tracer.cpp" />
     <ClCompile Include="Utility.cpp" />
@@ -157,6 +159,7 @@
   <ItemGroup>
     <ClInclude Include="Camera.hpp" />
     <ClInclude Include="cyCore.h" />
+    <ClInclude Include="Material.hpp" />
     <ClInclude Include="Tracer.hpp" />
     <ClInclude Include="Utility.hpp" />
     <ClInclude Include="cyPoint.h" />
