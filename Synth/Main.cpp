@@ -28,18 +28,16 @@ void renderScene()
 	Camera proj = { { 0, 20, -4 },{ 0, -1, 0 },{ 0, 0, -1 }, 9, 9, 10 };
 	cyPoint3d solidColor;
 
-#ifndef DEPTH_OF_FIELD
-	AreaCamera areaCam(eye, view, up);
-#else
+#ifdef DEPTH_OF_FIELD
+	//AreaCamera areaCam(eye, view, up);
 	AreaCamera areaCam(eye, view, up, 0.06, 0.06, 4, 4, 1, 1, 5);
-#endif
-
 	cyPoint3d eyePos;
 	double pX, pY, px, py, prx, pry;
 	double psubweighted = 1.0 / (areaCam.pxsub * areaCam.pysub);
 	double pmaxweighted = 1.0 / (areaCam.pxmax * areaCam.pymax);
 	cyPoint3d pointOnFocalPlane;
 	cyPoint3d primaryRay, secondaryRay;
+#endif
 
 	vector<Quadric> quadrics;
 	vector<cyPoint3d> axes = { { 0, 0, 1 }, { 1, 0, 0 }, { 0, 1, 0 } };
@@ -47,8 +45,8 @@ void renderScene()
 	Material mt1(0.05, { 1, 1, 1 }, 0.5, _725E9C , 0.0, _725E9C, 0.0, { 1, 1, 1 }, Tex_env, Null_image);
 	Quadric infSphere({ 1, 1, 1 }, 0, -1, { 0, 0, 0 }, { 1, 1, 1 }, axes, mt1);
 
-	Material mt2(0.05, { 1, 1, 1 }, 0.5, { 0.7, 0.7, 0.7 }, 0.0, { 1, 1, 1 }, 0.0, { 1, 1, 1 }, Tex_sphere, Null_image);
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 0, 0 }, { 1, 1, 1 }, axes, mt2));
+	Material mt2(0.05, { 1, 1, 1 }, 0.5, { 0.7, 0.7, 0.7 }, 0.0, { 1, 1, 1 }, 0.0, { 1, 1, 1 }, Tex_sphere, Norm_sphere);
+	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 0, 0 }, { 2, 2, 2 }, axes, mt2));
 
 #ifdef OBJFILE
 	LoadObjFile(OBJFILE, quadrics);
@@ -85,8 +83,7 @@ void renderScene()
 					x = X / Xmax;
 					y = Y / Ymax;
 					pix = cam.viewPortBottomLeft + cam.scaleX * cam.n0 * x + cam.scaleY * cam.n1 * y;
-
-#if DEPTH_OF_FIELD
+#ifdef DEPTH_OF_FIELD
 					//pix = areaCam.eyeBottomLeft + areaCam.scaleX * areaCam.n0 * x + areaCam.scaleY * areaCam.n1 * y;
 					primaryRay = (pix - areaCam.pos).GetNormalized();
 					pointOnFocalPlane = areaCam.pos + areaCam.focalLength * primaryRay;

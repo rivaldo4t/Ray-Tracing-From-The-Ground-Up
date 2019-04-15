@@ -24,7 +24,7 @@ Image Tex_sphere("textures/moon.jpg");
 //Image Tex_sphere_2("textures/AdobeStock_space_2.2.jpeg");
 //Image Tex_sphere_3("textures/nebula.jpg");
 //Image Tex_sphere_4("textures/jupiter.jpg");
-//Image Norm_sphere("textures/map.jpg");
+Image Norm_sphere("textures/map.jpg");
 //Image Norm_plane("textures/stone.jpg");
 //Image camera_painting("textures/abs9_960x1080.jpg");
 

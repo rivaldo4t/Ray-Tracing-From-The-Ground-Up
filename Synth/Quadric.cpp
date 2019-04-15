@@ -167,73 +167,52 @@ cyPoint3d Quadric :: normalAtHitPoint(cyPoint3d hitPoint)
 		double u, v, ratioX, ratioY;
 		int pixelX, pixelY;
 		int w, h;
-		double phi, theta, tempX;
+
+		w = material.normalImage.width;
+		h = material.normalImage.height;
 
 		switch (type)
 		{
-		case 0:
-		{
-			w = material.normalImage.width;
-			h = material.normalImage.height;
+			case 0:
+			{
+				u = (1 - s - t)*texpoints[0][0] + s*texpoints[1][0] + t*texpoints[2][0];
+				v = (1 - s - t)*texpoints[0][1] + s*texpoints[1][1] + t*texpoints[2][1];
+				break;
+			}
+			case 1:
+			{
+				double phi, theta, tempX;
 
-			u = (1 - s - t)*texpoints[0][0] + s*texpoints[1][0] + t*texpoints[2][0];
-			v = (1 - s - t)*texpoints[0][1] + s*texpoints[1][1] + t*texpoints[2][1];
-			u = u * w;
-			v = v * h;
+				phi = N[2].Dot(hitPoint - qc) / si[2];
+				phi = acos(phi);
+				v = phi / cy::cyPi<double>();
 
-			pixelX = (int)(u);
-			pixelY = (int)(v);
-			ratioX = u - pixelX;
-			ratioY = v - pixelY;
+				theta = N[1].Dot(hitPoint - qc) / si[1];
+				theta = theta / sin(phi);
+				theta = acos(theta);
+				tempX = N[0].Dot(hitPoint - qc) / si[0];
+				theta = tempX >= 0 ? theta : (cy::cyPi<double>() * 2) - theta;
+				u = theta / (cy::cyPi<double>() * 2);
 
-			color = material.normalImage.texture[(pixelY + 0) % h][(pixelX + 0) % w] * (1 - ratioX) * (1 - ratioY) +
-				material.normalImage.texture[(pixelY + 1) % h][(pixelX + 0) % w] * (1 - ratioX) * ratioY +
-				material.normalImage.texture[(pixelY + 0) % h][(pixelX + 1) % w] * ratioX * (1 - ratioY) +
-				material.normalImage.texture[(pixelY + 1) % h][(pixelX + 1) % w] * ratioX * ratioY;
-
-			cyPoint3d t;
-			t = (2 * color[0] - 1) * N[0] + (2 * color[1] - 1) * N[1] + (2 * color[2] - 1) * N[2];
-			t = color*2.0 - 1.0;
-			normalAtHit = t;
-			break;
+				//handle negative dot product
+				break;
+			}
 		}
-		case 1:
-		{
-			w = material.normalImage.width;
-			h = material.normalImage.height;
 
-			phi = N[2].Dot(hitPoint - qc) / si[2];
-			phi = acos(phi);
-			v = phi / cy::cyPi<double>();
+		v = v * h;
+		u = u * w;
+		pixelY = (int)(v);
+		pixelX = (int)(u);
+		ratioY = v - pixelY;
+		ratioX = u - pixelX;
 
-			theta = N[1].Dot(hitPoint - qc) / si[1];
-			theta = theta / sin(phi);
-			theta = acos(theta);
-			tempX = N[0].Dot(hitPoint - qc) / si[0];
-			theta = tempX >= 0 ? theta : (cy::cyPi<double>() * 2) - theta;
-			u = theta / (cy::cyPi<double>() * 2);
+		color = material.normalImage.texture[(pixelY + 0) % h][(pixelX + 0) % w] * (1 - ratioX) * (1 - ratioY) +
+			material.normalImage.texture[(pixelY + 1) % h][(pixelX + 0) % w] * (1 - ratioX) * ratioY +
+			material.normalImage.texture[(pixelY + 0) % h][(pixelX + 1) % w] * ratioX * (1 - ratioY) +
+			material.normalImage.texture[(pixelY + 1) % h][(pixelX + 1) % w] * ratioX * ratioY;
 
-			//handle negative dot product
-
-			v = v * h;
-			u = u * w;
-			pixelY = (int)(v);
-			pixelX = (int)(u);
-			ratioY = v - pixelY;
-			ratioX = u - pixelX;
-
-			color = material.normalImage.texture[(pixelY + 0) % h][(pixelX + 0) % w] * (1 - ratioX) * (1 - ratioY) +
-				material.normalImage.texture[(pixelY + 1) % h][(pixelX + 0) % w] * (1 - ratioX) * ratioY +
-				material.normalImage.texture[(pixelY + 0) % h][(pixelX + 1) % w] * ratioX * (1 - ratioY) +
-				material.normalImage.texture[(pixelY + 1) % h][(pixelX + 1) % w] * ratioX * ratioY;
-
-			cyPoint3d t;
-			t = (2 * color[0] - 1) * N[0] + (2 * color[1] - 1) * N[1] + (2 * color[2] - 1) * N[2];
-			t = color*2.0 - 1.0;
-			normalAtHit = t;
-			break;
-		}
-		}
+		//normalAtHit = (2 * color[0] - 1) * N[0] + (2 * color[1] - 1) * N[1] + (2 * color[2] - 1) * N[2];
+		normalAtHit = color*2.0 - 1.0;
 	}
 
 	return normalAtHit.GetNormalized();
@@ -283,39 +262,20 @@ cyPoint3d Quadric :: computeTextureColor(cyPoint3d hitPoint, cyPoint3d normalAtH
 		int pixelX, pixelY;
 		int w, h;
 
+		w = material.textureImage.width;
+		h = material.textureImage.height;
+
 		switch (type)
 		{
-			//plane
 			case 0:
 			{
-				w = material.textureImage.width;
-				h = material.textureImage.height;
-
 				u = (1 - s - t)*texpoints[0][0] + s*texpoints[1][0] + t*texpoints[2][0];
 				v = (1 - s - t)*texpoints[0][1] + s*texpoints[1][1] + t*texpoints[2][1];
-				u = u * w;
-				v = v * h;
-				pixelX = (int)(u);
-				pixelY = (int)(v);
-
-				ratioX = u - pixelX;
-				ratioY = v - pixelY;
-
-				//color = textureImage.texture[(pixelY + 0) % h][(pixelX + 0) % w];
-				color = material.textureImage.texture[(pixelY + 0) % h][(pixelX + 0) % w] * (1 - ratioX) * (1 - ratioY) +
-					material.textureImage.texture[(pixelY + 1) % h][(pixelX + 0) % w] * (1 - ratioX) * ratioY +
-					material.textureImage.texture[(pixelY + 0) % h][(pixelX + 1) % w] * ratioX * (1 - ratioY) +
-					material.textureImage.texture[(pixelY + 1) % h][(pixelX + 1) % w] * ratioX * ratioY;
-
 				break;
 			}
-			//sphere
 			case 1:
 			{
 				double phi, theta, tempX;
-
-				w = material.textureImage.width;
-				h = material.textureImage.height;
 
 				normalAtHit = env ? normalAtHit : hitPoint - qc;
 				normalAtHit.Normalize();
@@ -329,30 +289,30 @@ cyPoint3d Quadric :: computeTextureColor(cyPoint3d hitPoint, cyPoint3d normalAtH
 				theta = acos(theta);
 
 				tempX = N[0].Dot(normalAtHit) / si[0];
-				tempX = N[0].Dot(hitPoint - qc) / si[0];
 				theta = tempX >= 0 ? theta : (cy::cyPi<double>() * 2) - theta;
 				u = theta / (cy::cyPi<double>() * 2);
 
 				//handle negative dot product
-
-				v = v * h;
-				u = u * w;
-				pixelY = (int)(v);
-				pixelX = (int)(u);
-				ratioY = v - pixelY;
-				ratioX = u - pixelX;
-
-				color = material.textureImage.texture[(pixelY + 0) % h][(pixelX + 0) % w] * (1 - ratioX) * (1 - ratioY) +
-					material.textureImage.texture[(pixelY + 1) % h][(pixelX + 0) % w] * (1 - ratioX) * ratioY +
-					material.textureImage.texture[(pixelY + 0) % h][(pixelX + 1) % w] * ratioX * (1 - ratioY) +
-					material.textureImage.texture[(pixelY + 1) % h][(pixelX + 1) % w] * ratioX * ratioY;
-
 				break;
 			}
 		}
 
+		v = v * h;
+		u = u * w;
+		pixelY = (int)(v);
+		pixelX = (int)(u);
+		ratioY = v - pixelY;
+		ratioX = u - pixelX;
+
+		//color = textureImage.texture[(pixelY + 0) % h][(pixelX + 0) % w];
+		color = material.textureImage.texture[(pixelY + 0) % h][(pixelX + 0) % w] * (1 - ratioX) * (1 - ratioY) +
+			material.textureImage.texture[(pixelY + 1) % h][(pixelX + 0) % w] * (1 - ratioX) * ratioY +
+			material.textureImage.texture[(pixelY + 0) % h][(pixelX + 1) % w] * ratioX * (1 - ratioY) +
+			material.textureImage.texture[(pixelY + 1) % h][(pixelX + 1) % w] * ratioX * ratioY;
+
 		material.diffuseColor = color;
 		material.specularColor = color;
+		// why?
 		material.refractive_index = color[0] > 0.5 ? 1.5 : 2.0;
 	}
 
