@@ -1,10 +1,10 @@
 ﻿#include "Main.hpp"
-//#include "LoadObj.hpp"
+#include "LoadObj.hpp"
 using namespace std;
 
-#define OUTPUT_JPG "output/out"
-//#define ANTI_ALIASED
+//#define OUTPUT_JPG "output/out"
 //#define OBJFILE "objects/cube.obj"
+//#define ANTI_ALIASED
 //#define DEPTH_OF_FIELD
 //#define MOTION_BLUR
 //#define CAM_PAINTING
@@ -31,7 +31,7 @@ void renderScene()
 #ifndef DEPTH_OF_FIELD
 	AreaCamera areaCam(eye, view, up);
 #else
-	AreaCamera areaCam(eye, view, up, 0.06, 0.06, 4, 4, 1, 1, 1.6 - 0 * 2);
+	AreaCamera areaCam(eye, view, up, 0.06, 0.06, 4, 4, 1, 1, 5);
 #endif
 
 	cyPoint3d eyePos;
@@ -42,37 +42,24 @@ void renderScene()
 	cyPoint3d primaryRay, secondaryRay;
 
 	vector<Quadric> quadrics;
-	vector<cyPoint3d> N = { { 0, 0, -1 },{ -1, 0, 0 },{ 0, -1, 0 } };
-	vector<pair<double, cyPoint3d>> colors = { { 0.05, { 1, 1, 1 } }, { 0.5, _725E9C }, { 0.0, _725E9C }, { 0.0 ,{ 1, 1, 1 } } };
+	vector<cyPoint3d> axes = { { 0, 0, 1 }, { 1, 0, 0 }, { 0, 1, 0 } };
 	
 	Material mt1(0.05, { 1, 1, 1 }, 0.5, _725E9C , 0.0, _725E9C, 0.0, { 1, 1, 1 }, Tex_env, Null_image);
-	Quadric infSphere({ 1, 1, 1 }, 0, -1, { 0, 0, 0 }, { 1, 1, 1 }, N, mt1);
+	Quadric infSphere({ 1, 1, 1 }, 0, -1, { 0, 0, 0 }, { 1, 1, 1 }, axes, mt1);
 
-	vector<pair<double, cyPoint3d>> colors3 = { { 0.05,{ 1, 1, 1 } },{ 0.5, {0.7, 0.7, 0.7} },{ 0.0, {1,1,1} },{ 0.0 ,{ 1, 1, 1 } } };
-	Material mt2(0.05, { 1, 1, 1 }, 0.5, { 0.7, 0.7, 0.7 }, 0.0, { 1, 1, 1 }, 0.0, { 1, 1, 1 }, Tex_sphere, Null_image, 0, 0);
-	rotVec(N[0], N[2], -animParam * 40);
-	rotVec(N[1], N[2], -animParam * 40);
-	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0.5 * cos(animParam), 0, 0.5 * sin(animParam) }, { 1, 1, 1 }, N, mt2));
+	Material mt2(0.05, { 1, 1, 1 }, 0.5, { 0.7, 0.7, 0.7 }, 0.0, { 1, 1, 1 }, 0.0, { 1, 1, 1 }, Tex_sphere, Null_image);
+	quadrics.push_back(Quadric({ 1, 1, 1 }, 0, -1, { 0, 0, 0 }, { 1, 1, 1 }, axes, mt2));
 
 #ifdef OBJFILE
 	LoadObjFile(OBJFILE, quadrics);
 #endif
 
-	cout << "Navigate using ARROW KEYS ...\n";
-	for (int space = 0; space < Xmax / 50; space++)
-		cout << " ";
-	cout << "|\n";
-
-//#pragma omp parellel for
-	// render pixels row wise
 	for (int i = 0; i < Xmax; i++)
 	{
 		if (i % 50 == 0)
-			cout << "#";
-
+			cout << ".";
 		for (int j = 0; j < Ymax; j++)
 		{
-
 #ifndef ANTI_ALIASED
 			rx = 0.5;
 			ry = 0.5;
@@ -98,9 +85,9 @@ void renderScene()
 					x = X / Xmax;
 					y = Y / Ymax;
 					pix = cam.viewPortBottomLeft + cam.scaleX * cam.n0 * x + cam.scaleY * cam.n1 * y;
-					//pix = areaCam.eyeBottomLeft + areaCam.scaleX * areaCam.n0 * x + areaCam.scaleY * areaCam.n1 * y;
 
-					// depth of field
+#if DEPTH_OF_FIELD
+					//pix = areaCam.eyeBottomLeft + areaCam.scaleX * areaCam.n0 * x + areaCam.scaleY * areaCam.n1 * y;
 					primaryRay = (pix - areaCam.pos).GetNormalized();
 					pointOnFocalPlane = areaCam.pos + areaCam.focalLength * primaryRay;
 					for (int pi = 0; pi < areaCam.pxmax; pi++)
@@ -132,9 +119,7 @@ void renderScene()
 							}
 						}
 					}
-					//
 
-					// camera painting
 #ifdef CAM_PAINTING
 					cp_r = camera_painting.texture[j][i][0];
 					cp_g = camera_painting.texture[j][i][1];
@@ -147,21 +132,21 @@ void renderScene()
 					eye = cyPoint3d{ 0.2, 0, 6 } + cp_x * cp_r * cam.n0 + cp_y * cp_g * cam.n1 + cp_z * cp_b * cam.n2;
 					areaCam = { eye, view, up };
 #endif
-
-					//camToPix = (pix - cam.pos).GetNormalized();
-					//color += castRays(cam.pos, camToPix, quadrics, lights, infSphere, 1) * weighted;
+#else
+					camToPix = (pix - cam.pos).GetNormalized();
+					color += castRays(cam.pos, camToPix, quadrics, lights, infSphere, 1) * weighted;
+#endif
 				}
 			}
 
-			frameBuffer[(Ymax * i + j) * 3 + 0] = clamp(color[0], 0.0, 1.0);
-			frameBuffer[(Ymax * i + j) * 3 + 1] = clamp(color[1], 0.0, 1.0);
-			frameBuffer[(Ymax * i + j) * 3 + 2] = clamp(color[2], 0.0, 1.0);
+			for (int k = 0; k < 3; ++k)
+				frameBuffer[(Ymax * i + j) * 3 + k] = (float)clamp(color[k], 0.0, 1.0);
 		}
 	}
 
 	glDrawPixels(Xmax, Ymax, GL_RGB, GL_FLOAT, frameBuffer.data());
 	glFlush();
-	cout << "\nRendering Complete\n\n";
+	cout << "!\n\n";
 
 #ifdef OUTPUT_JPG
 	string fname = OUTPUT_JPG + to_string(animParam) + ".jpg";
@@ -218,7 +203,7 @@ int main(int argc, char** argv)
 {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
-	glutInitWindowPosition(0, 0);
+	glutInitWindowPosition(500, 100);
 	glutInitWindowSize(Xmax, Ymax);
 	glutCreateWindow("----Synthesized----");
 	glutDisplayFunc(renderScene);

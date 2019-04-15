@@ -20,7 +20,7 @@ Image Null_image;
 Image Tex_env("textures/AdobeStock_space_3.2.jpeg");
 //Image Tex_plane("textures/AdobeStock_stone_2.jpeg");
 //Image Tex_plane_2("textures/tess3_sq.png");
-Image Tex_sphere("textures/AdobeStock_space_1.1.jpeg");
+Image Tex_sphere("textures/moon.jpg");
 //Image Tex_sphere_2("textures/AdobeStock_space_2.2.jpeg");
 //Image Tex_sphere_3("textures/nebula.jpg");
 //Image Tex_sphere_4("textures/jupiter.jpg");

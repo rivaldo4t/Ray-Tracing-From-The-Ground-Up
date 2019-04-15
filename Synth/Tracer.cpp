@@ -271,5 +271,6 @@ cyPoint3d castRays(cyPoint3d pos, cyPoint3d dir, vector<Quadric>& quadrics, vect
 		else
 			color += colorTemp;
 	}
+
 	return color;
 }

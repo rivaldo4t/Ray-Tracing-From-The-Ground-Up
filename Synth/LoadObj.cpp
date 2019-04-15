@@ -1,4 +1,5 @@
 #include "LoadObj.hpp"
+#include "OBJ_Loader.h"
 
 void LoadObjFile(std::string filename, vector<Quadric>& quadrics)
 {

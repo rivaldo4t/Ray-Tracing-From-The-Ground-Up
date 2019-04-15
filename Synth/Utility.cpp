@@ -39,9 +39,9 @@ void rotVec(cyPoint3d& v1, cyPoint3d v2, double degAngle)
 double clamp(double val, double low, double high)
 {
 	if (val < low)
-		return 0;
+		return 0.0;
 	else if (val > high)
-		return 1;
+		return 1.0;
 	else
 		return (val - low) / (high - low);
 }

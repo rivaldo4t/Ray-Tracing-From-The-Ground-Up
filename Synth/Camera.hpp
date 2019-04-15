@@ -28,7 +28,7 @@ class AreaCamera
 public:
 	cyPoint3d pos, dir, updir;
 	cyPoint3d n0, n1, n2;
-	cyPoint3d eyeBottomLeft;
+	cyPoint3d eyeCenter, eyeBottomLeft;
 	double scaleX, scaleY;
 	int pxmax, pymax;
 	int pxsub, pysub;
@@ -45,6 +45,7 @@ public:
 		n0 = dir.Cross(updir).GetNormalized();
 		n1 = n0.Cross(n2).GetNormalized();
 
+		//eyeCenter = pos + n2 * focalLength;
 		eyeBottomLeft = pos - n0 * (scaleX / 2.0) - n1 * (scaleY / 2.0);
 	}
 };
