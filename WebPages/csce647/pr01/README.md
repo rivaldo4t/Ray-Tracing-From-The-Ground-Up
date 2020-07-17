@@ -11,7 +11,7 @@
 <tr>
 <td align=center>
 <font size=4>
-<img src=WebPages/csce647/pr01/01.jpg width=600><br><br>
+<img src=01.jpg width=600><br><br>
 This is an Android Material wallpaper based raster image with 8x8 anti-aliasing.<br>
 It's is a cross section of 3D spheres, planes and a prism(implicit) function.<br>
 </td>
@@ -20,7 +20,7 @@ It's is a cross section of 3D spheres, planes and a prism(implicit) function.<br
 <tr>
 <td align=center>
 <font size=4>
-<img src=WebPages/csce647/pr01/00.jpg width=600><br><br>
+<img src=00.jpg width=600><br><br>
 This Image is aliased version of the previous one.
 </td>
 </tr> 
