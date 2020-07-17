@@ -1,15 +1,82 @@
-# Ray-Tracing-From-The-Ground-Up
-![Render](WebPages/csce647/pr10/glosslucent.jpg)
-This is an Ad-Hoc code for ray tracing <br /> 
-TBD : Refractoring <br /> <br />
+<center>
+<table border=0 cellspacing=5 cellpadding=5 width=90%>
 
-<a href=pr01/readme.md> Project 01: 2D Raster Conversion </a><br>
-<a href=pr02/readme.md> Project 02: Basic Camera Operation </a><br>
-<a href=pr03/readme.md> Project 03: Basic Shading </a><br>
-<a href=pr04/readme.md> Project 04: Shadow Casting </a><br>
-<a href=pr05/readme.md> Project 05: Texture mapping </a><br>
-<a href=pr06/readme.md> Project 06: Solid Textures </a><br>
-<a href=pr07/readme.md> Project 07: Casting Triangles </a><br>
-<a href=pr08/readme.md> Project 08: Specular Reflection </a><br>
-<a href=pr09/readme.md> Project 09: Refraction </a><br>
-<a href=pr10/readme.md> Project 10: Distributed Ray Tracing </a><br>
+<tr>
+<td align=center>
+<b><font size=5>Project 05: Texture mapping<br></font>
+<b><font size=6>Tushar T.<br></font>
+</td>
+</tr> 
+
+<tr>
+<td align=center>
+<font size=4>
+<img src=1.jpg width=600><br><br>
+Regular and Infinite Sphere Texture Mapping with Bi-linear filtering.
+<br>
+</td>
+</tr> 
+
+<tr>
+<td align=center>
+<font size=4>
+<img src=3.jpg width=600><br><br>
+Infinite Plane Texture Mapping.
+<br>
+</td>
+</tr> 
+
+<tr>
+<td align=center>
+<font size=4>
+<img src=4.png width=600><br><br>
+Texture used for Infinite Plane mapping.
+<br>
+</td>
+</tr> 
+
+<tr>
+<td align=center>
+<font size=4>
+<img src=2.jpg width=600><br><br>
+Texture used for Sphere mappings.
+<br>
+</td>
+</tr> 
+
+<tr>
+<td align=center>
+<font size=4>
+<img src=5.jpg width=600><br><br>
+Texture used for Normal Mapping.
+<br>
+</td>
+</tr>
+
+<tr>
+<td align=center>
+<font size=4>
+<img src=texmap.jpg width=600><br><br>
+<b>Edit: Texture mapping</b>
+<br>
+</td>
+</tr>
+
+<tr>
+<td align=center>
+<font size=4>
+<img src=tex13.jpg width=600><br><br>
+<br>
+</td>
+</tr>
+
+<tr>
+<td align=center>
+<font size=4>
+<img src=tex17.jpg width=600><br><br>
+<br>
+</td>
+</tr>
+
+</table>
+</center>

@@ -1,15 +1,77 @@
-# Ray-Tracing-From-The-Ground-Up
-![Render](WebPages/csce647/pr10/glosslucent.jpg)
-This is an Ad-Hoc code for ray tracing <br /> 
-TBD : Refractoring <br /> <br />
+<center>
+<table border=0 cellspacing=5 cellpadding=5 width=90%>
 
-<a href=pr01/readme.md> Project 01: 2D Raster Conversion </a><br>
-<a href=pr02/readme.md> Project 02: Basic Camera Operation </a><br>
-<a href=pr03/readme.md> Project 03: Basic Shading </a><br>
-<a href=pr04/readme.md> Project 04: Shadow Casting </a><br>
-<a href=pr05/readme.md> Project 05: Texture mapping </a><br>
-<a href=pr06/readme.md> Project 06: Solid Textures </a><br>
-<a href=pr07/readme.md> Project 07: Casting Triangles </a><br>
-<a href=pr08/readme.md> Project 08: Specular Reflection </a><br>
-<a href=pr09/readme.md> Project 09: Refraction </a><br>
-<a href=pr10/readme.md> Project 10: Distributed Ray Tracing </a><br>
+<tr>
+<td align=center>
+<b><font size=5>Project 09: Refraction <br></font>
+<b><font size=6>Tushar T.<br></font>
+</td>
+</tr> 
+
+<tr>
+<td align=center>
+<font size=4>
+<a href="exe.zip" download>
+	<font size=3>[ Click here to download the executables for all tasks ]<br><br></font>
+</a>
+</tr>
+
+<tr>
+<td align=center>
+<font size=4>
+<img src=implicit.jpg width=600><br>
+Transparent impilict shape IOR = 1.5<br><br>
+</td>
+</tr> 
+
+<tr>
+<td align=center>
+<font size=4>
+<img src=obj.jpg width=600><br>
+Transparent cube imported from OBJ file IOR = 1.5<br><br>
+</td>
+</tr>
+
+<tr>
+<td align=center>
+<font size=4>
+<video width="600" controls>
+  <source src="varying ior.mp4" type="video/mp4">
+Your browser does not support the video tag
+</video><br>
+Refraction of a sphere with IOR between [1.0, 2.5]<br><br>
+</td>
+</tr> 
+
+<tr>
+<td align=center>
+<font size=4>
+<img src="tex ior.jpg" width=600><br><br>
+<img src="stripes.jpg" width=600><br>
+Transparency using a striped texture; the black region sets IOR = 1.5, white region sets IOR = 2.5<br><br>
+</td>
+</tr>
+
+<tr>
+<td align=center>
+<font size=4>
+<img src="normal ior.jpg" width=600><br><br>
+<img src="map.jpg" width=600><br>
+Transparency using a normal map IOR = 2.0<br><br>
+</td>
+</tr>
+
+<tr>
+<td align=center>
+<font size=4>
+<video width="600" controls>
+  <source src="normal ior.mp4" type="video/mp4">
+Your browser does not support the video tag
+</video><br><br>
+<img src="stone.jpg" width=600><br>
+Refraction of a plane using normal mapping and IOR between [1.0, 2.5]<br><br>
+</td>
+</tr> 
+
+</table>
+</center>
